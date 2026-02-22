@@ -592,9 +592,72 @@ function importJSON(i) {
 function resetAll() { if(confirm("Sıfırlansın mı?")) { localStorage.clear(); location.reload(); } }
 
 let synth = window.speechSynthesis;
-function playS() { synth.cancel(); let u = new SpeechSynthesisUtterance(activeR.en); u.rate = document.getElementById('speed').value; u.lang = 'en-US'; synth.speak(u); }
-function pauseS() { synth.pause(); }
-function stopS() { synth.cancel(); }
+let isPlaying = false;
+
+function playS() {
+    synth.cancel(); // Mevcut sesi durdur
+    isPlaying = true;
+    
+    const rawText = activeR.en;
+    const speed = document.getElementById('speed').value;
+    
+    // Metni noktalama işaretlerine göre parçala ama işaretleri koru
+    // (RegEx: Virgül veya Nokta gördüğünde ayır)
+    const parts = rawText.split(/([,.])/g);
+    
+    let index = 0;
+
+    function speakPart() {
+        if (index >= parts.length || !isPlaying) {
+            isPlaying = false;
+            return;
+        }
+
+        let segment = parts[index].trim();
+        
+        if (segment === "," || segment === ".") {
+            // Duraksama süresini belirle (Virgül: 200ms, Nokta: 400ms)
+            // Hız slider'ından bağımsız sabit bir es payı ekliyoruz
+            const delay = segment === "," ? 200 : 400;
+            
+            setTimeout(() => {
+                index++;
+                speakPart();
+            }, delay);
+        } else if (segment.length > 0) {
+            let u = new SpeechSynthesisUtterance(segment);
+            u.rate = speed;
+            u.lang = 'en-US';
+            
+            u.onend = () => {
+                index++;
+                speakPart();
+            };
+            
+            u.onerror = () => {
+                isPlaying = false;
+            };
+
+            synth.speak(u);
+        } else {
+            // Boşluklar için atla
+            index++;
+            speakPart();
+        }
+    }
+
+    speakPart();
+}
+
+function pauseS() {
+    isPlaying = false;
+    synth.pause();
+}
+
+function stopS() {
+    isPlaying = false;
+    synth.cancel();
+}
 function updateSpd() { document.getElementById('speedVal').innerText = document.getElementById('speed').value + "x"; }
 
 // INITIALIZATION
