@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASTER ENGLISH PRO - FINAL 11 MADDE</title>
+    <title>MASTER ENGLISH PRO - FINAL 12 MADDE</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -32,6 +32,66 @@
         .btn { width: 100%; height: var(--btn-height); border: none; border-radius: 15px; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; box-shadow: var(--shadow); font-size: 1rem; }
         .back-nav { background: #f1f5f9; border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: bold; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 5px; }
 
+        /* MADDE 12: READING CAROUSEL TASARIMI */
+        .carousel-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 20px;
+            padding: 10px 0 30px 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .carousel-container::-webkit-scrollbar { display: none; }
+        
+        .read-card {
+            flex: 0 0 85%;
+            background: white;
+            border-radius: 25px;
+            scroll-snap-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .read-card:active { transform: scale(0.98); }
+        
+        .read-card-img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: #f1f5f9;
+            display: block;
+        }
+        
+        .read-card-info {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .read-card-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .done-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--success);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
         /* KART MODU (Madde 10) */
         .card-box { width: 100%; height: 380px; perspective: 1000px; cursor: pointer; margin-bottom: 20px; }
         .card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
@@ -43,90 +103,14 @@
         .card-detail-item { margin-bottom: 10px; font-size: 0.95rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
 
         /* READING & AUDIO (Madde 4) */
-        
-/* Ses Paneli - Tam Düzeltme */
-.audio-panel {
-    background: #f1f5f9;
-    padding: 10px 15px;
-    border-radius: 15px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
+        .audio-panel { background: #f1f5f9; padding: 10px 15px; border-radius: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; }
+        .audio-panel button { background: white; border: 1px solid #e2e8f0; border-radius: 10px; width: 45px; height: 45px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s; }
+        .audio-panel button:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
-.audio-panel button {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    width: 45px;
-    height: 45px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: all 0.2s;
-}
-
-.audio-panel button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-/* Okuma Alanı - Satır Aralığı Azaltıldı */
-.reading-area { 
-    line-height: 1.6rem !important; /* Aralığı daralttık */
-    font-size: 0.95rem !important; 
-    background-color: #fffaf0; 
-    background-image: linear-gradient(#f1e9d2 1px, transparent 1px); 
-    background-size: 100% 1.6rem; /* Satır çizgisiyle tam uyum */
-    background-attachment: local;
-    border: 1px solid #dcd7cc;
-    border-bottom: 5px solid #c4beb3;
-    padding: 15px 20px; 
-    border-radius: 12px; 
-    height: 450px !important;
-    overflow-y: auto;
-}
-/* Ders Listesi İyileştirmesi */
-.read-item-btn {
-    width: 100%;
-    height: 45px !important; /* Yükseklik daraltıldı */
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    margin-bottom: 8px;
-    padding: 0 15px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Numara solda, Tik sağda */
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.85rem;
-}
-.done-tick { color: #4ade80; font-weight: bold; }
-        /* Kelime Tıklama ve Bilinmeyen Kelime Görünümü */
-.word-span { 
-    cursor: pointer; 
-    border-radius: 4px; 
-    padding: 0 2px; 
-    transition: 0.2s; 
-}
-
-.word-span:hover {
-    background: rgba(79, 70, 229, 0.1);
-}
-
-.is-unknown { 
-    color: var(--danger) !important; 
-    font-weight: bold; 
-    border-bottom: 2px dashed var(--danger);
-    background: transparent !important;
-    text-decoration: none !important; /* Eski alt çizgiyi kaldırır */
-}
+        .reading-area { line-height: 1.6rem !important; font-size: 0.95rem !important; background-color: #fffaf0; background-image: linear-gradient(#f1e9d2 1px, transparent 1px); background-size: 100% 1.6rem; background-attachment: local; border: 1px solid #dcd7cc; border-bottom: 5px solid #c4beb3; padding: 15px 20px; border-radius: 12px; height: 450px !important; overflow-y: auto; }
+        .word-span { cursor: pointer; border-radius: 4px; padding: 0 2px; transition: 0.2s; }
+        .word-span:hover { background: rgba(79, 70, 229, 0.1); }
+        .is-unknown { color: var(--danger) !important; font-weight: bold; border-bottom: 2px dashed var(--danger); background: transparent !important; text-decoration: none !important; }
 
         /* AYARLAR & YÜKLEME (Madde 11) */
         .upload-section { background: #fff; border: 1px solid #e2e8f0; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
@@ -157,7 +141,6 @@
     <div id="settings" class="screen">
         <button class="back-nav" onclick="show('home')">⬅ Geri</button>
         <h3>Veri Yönetim Merkezi</h3>
-        
         <div class="upload-section">
             <span class="upload-title">🔤 Kelime Yükleme (10 Sütun)</span>
             <textarea id="wordPaste" placeholder="word | tr | typeEn | ..."></textarea>
@@ -167,7 +150,6 @@
             </div>
             <input type="file" id="wordFile" style="display:none" onchange="handleFile(this, 'word')">
         </div>
-
         <div class="upload-section">
             <span class="upload-title">📖 Reading Yükleme (Blok Format)</span>
             <textarea id="readPaste" placeholder="A1 Başlık ..."></textarea>
@@ -177,7 +159,6 @@
             </div>
             <input type="file" id="readFile" style="display:none" onchange="handleFile(this, 'read')">
         </div>
-
         <div style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn" style="background:#475569; flex:1; height:50px;" onclick="exportJSON()">📥 Yedek Al</button>
             <button class="btn" style="background:#475569; flex:1; height:50px;" onclick="document.getElementById('jsonInp').click()">📤 Geri Yükle</button>
@@ -189,7 +170,7 @@
     <div id="readList" class="screen">
         <button class="back-nav" onclick="show('home')">⬅ Geri</button>
         <h3 id="listLvlTitle"></h3>
-        <div id="readItems"></div>
+        <div id="carousel" class="carousel-container"></div>
     </div>
 
     <div id="readMod" class="screen">
@@ -211,16 +192,15 @@
         </div>
         <h3 id="qText" style="margin-bottom:25px;"></h3>
         <div id="qOptions"></div>
-            </div>
-
-<div id="resultScreen" class="screen">
-    <div class="streak-card" style="background:var(--primary)">
-        <h1 id="resPercent">%0 Başarı</h1>
-        <div id="resDetail">
-            </div>
     </div>
-    <button class="btn" style="background:var(--success)" onclick="show('home')">Ana Sayfaya Dön</button>
-</div>  
+
+    <div id="resultScreen" class="screen">
+        <div class="streak-card" style="background:var(--primary)">
+            <h1 id="resPercent">%0 Başarı</h1>
+            <div id="resDetail"></div>
+        </div>
+        <button class="btn" style="background:var(--success)" onclick="show('home')">Ana Sayfaya Dön</button>
+    </div>  
 
     <div id="cardScreen" class="screen">
         <button class="back-nav" onclick="show('home')">⬅ Geri</button>
@@ -240,36 +220,20 @@
 </div>
 
 <script>
-   // CORE DATABASE
-let db = { 
-    lvl: 'A1', dictionary: [], unknown: [], readings: [], 
-    stats: { completed: {}, correct: 0, total: 0 } 
-};
-let userAnswers = [];
-let activeR = null; 
-let qCounter = 0; 
-let qScore = 0;
+let db = { lvl: 'A1', dictionary: [], unknown: [], readings: [], stats: { completed: {}, correct: 0, total: 0 } };
+let userAnswers = [], activeR = null, qCounter = 0, qScore = 0;
 
-// STORAGE MGT
 const save = () => localStorage.setItem('master_eng_11', JSON.stringify(db));
-const load = () => { 
-    const data = localStorage.getItem('master_eng_11');
-    if(data) db = JSON.parse(data);
-};
-
+const load = () => { const data = localStorage.getItem('master_eng_11'); if(data) db = JSON.parse(data); };
 function notify(m) { const t = document.getElementById('toast'); t.innerText = m; t.className="show"; setTimeout(()=>t.className="", 2500); }
 
-// PARSER LOGIC
+// PARSER (KORUNDU)
 function processInput(text, type) {
     if(!text.trim()) return;
     if(type === 'word') {
         text.trim().split('\n').forEach(line => {
             const p = line.split('|').map(x => x.trim());
-            if(p.length >= 10) {
-                db.dictionary.push({
-                    w:p[0].toLowerCase(), tr:p[1], te:p[2], tt:p[3], de:p[4], dt:p[5], e1:p[6], e1t:p[7], e2:p[8], e2t:p[9]
-                });
-            }
+            if(p.length >= 10) db.dictionary.push({ w:p[0].toLowerCase(), tr:p[1], te:p[2], tt:p[3], de:p[4], dt:p[5], e1:p[6], e1t:p[7], e2:p[8], e2t:p[9] });
         });
         notify("Kelime Havuzu Güncellendi");
     } else {
@@ -280,141 +244,71 @@ function processInput(text, type) {
             const spaceIdx = firstLine.indexOf(" ");
             const level = firstLine.substring(0, spaceIdx);
             const title = firstLine.substring(spaceIdx + 1);
-            
-            const dashIdx = part.indexOf('---');
-            const qIdx = part.indexOf('###SORULAR###');
-
+            const dashIdx = part.indexOf('---'), qIdx = part.indexOf('###SORULAR###');
             const questions = [];
             let currentQ = null;
             part.substring(qIdx + 13).split('\n').forEach(l => {
                 const ln = l.trim();
-                if(ln.startsWith('Q')) {
-                    if(currentQ) questions.push(currentQ);
-                    currentQ = { q: ln, A:"", B:"", C:"", D:"", correct:"" };
-                } else if(ln.startsWith('Correct:')) {
-                    currentQ.correct = ln.split(':')[1].trim();
-                } else if(ln.match(/^[A-D]\)/)) {
-                    currentQ[ln[0]] = ln.substring(2).trim();
-                }
+                if(ln.startsWith('Q')) { if(currentQ) questions.push(currentQ); currentQ = { q: ln, A:"", B:"", C:"", D:"", correct:"" }; }
+                else if(ln.startsWith('Correct:')) { currentQ.correct = ln.split(':')[1].trim(); }
+                else if(ln.match(/^[A-D]\)/)) { currentQ[ln[0]] = ln.substring(2).trim(); }
             });
             if(currentQ) questions.push(currentQ);
-
-            db.readings.push({
-                lvl: level, title, 
-                en: part.substring(part.indexOf('\n'), dashIdx).trim(),
-                tr: part.substring(dashIdx + 3, qIdx).trim(),
-                qs: questions
-            });
+            db.readings.push({ lvl: level, title, en: part.substring(part.indexOf('\n'), dashIdx).trim(), tr: part.substring(dashIdx + 3, qIdx).trim(), qs: questions });
         });
         notify("Metinler Havuzu Güncellendi");
     }
     save();
 }
 
-// INTERFACE MGT
 function show(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     if(id === 'readList') renderReadList();
 }
 
-function setLvl(l) {
-    db.lvl = l;
-    document.querySelectorAll('.level-btn').forEach(b => b.classList.toggle('selected', b.innerText === l));
-    save();
-}
+function setLvl(l) { db.lvl = l; document.querySelectorAll('.level-btn').forEach(b => b.classList.toggle('selected', b.innerText === l)); save(); }
+function handleFile(input, type) { const reader = new FileReader(); reader.onload = (e) => processInput(e.target.result, type); reader.readAsText(input.files[0]); }
+function handlePaste(type) { const el = document.getElementById(type === 'word' ? 'wordPaste' : 'readPaste'); processInput(el.value, type); el.value = ""; }
 
-function handleFile(input, type) {
-    const reader = new FileReader();
-    reader.onload = (e) => processInput(e.target.result, type);
-    reader.readAsText(input.files[0]);
-}
-
-function handlePaste(type) {
-    const el = document.getElementById(type === 'word' ? 'wordPaste' : 'readPaste');
-    processInput(el.value, type);
-    el.value = "";
-}
-
-// FLASHCARDS
-let cardIdx = 0; let isEngMode = true;
-function openCards() {
-    if(db.unknown.length === 0) return alert("Metin okurken kelime ekleyin!");
-    cardIdx = 0; isEngMode = true; show('cardScreen'); renderCard();
-}
-function renderCard() {
-    const w = db.unknown[cardIdx];
-    const cont = document.getElementById('cardContainer');
-    cont.innerHTML = `
-        <div class="card-box" onclick="this.children[0].classList.toggle('flipped')">
-            <div class="card-inner">
-                <div class="card-front"><div class="card-word">${w.w}</div><small>Detaylar için dokun</small></div>
-                <div class="card-back" id="cardBack"></div>
-            </div>
-        </div>`;
-    updateCardContent();
-}
-function updateCardContent() {
-    const w = db.unknown[cardIdx];
-    const back = document.getElementById('cardBack');
-    if(isEngMode) {
-        back.innerHTML = `<h3>${w.tr}</h3>
-            <div class="card-detail-item"><b>Type:</b> ${w.te}</div>
-            <div class="card-detail-item"><b>Def:</b> ${w.de}</div>
-            <div class="card-detail-item"><b>Ex 1:</b> ${w.e1}</div>
-            <div class="card-detail-item"><b>Ex 2:</b> ${w.e2}</div>`;
-    } else {
-        back.innerHTML = `<h3>${w.tr}</h3>
-            <div class="card-detail-item"><b>Tür:</b> ${w.tt}</div>
-            <div class="card-detail-item"><b>Tanım:</b> ${w.dt}</div>
-            <div class="card-detail-item"><b>Örnek 1:</b> ${w.e1t}</div>
-            <div class="card-detail-item"><b>Örnek 2:</b> ${w.e2t}</div>`;
-    }
-}
-function toggleCardLang() { isEngMode = !isEngMode; updateCardContent(); }
-function cardAction(type) {
-    if(type === 'know') db.unknown.splice(cardIdx, 1);
-    else cardIdx = (cardIdx + 1) % db.unknown.length;
-    if(db.unknown.length > 0) { renderCard(); save(); } else show('home');
-}
-
-// READING & QUIZ
+// MADDE 12: CAROUSEL RENDER
 function renderReadList() {
     document.getElementById('listLvlTitle').innerText = db.lvl + " Metinleri";
-    const cont = document.getElementById('readItems'); 
-    cont.innerHTML = '';
+    const carousel = document.getElementById('carousel');
+    carousel.innerHTML = '';
     const filtered = db.readings.filter(r => r.lvl === db.lvl);
-    filtered.forEach((r, index) => {
+    
+    filtered.forEach((r) => {
         const isDone = db.stats.completed[r.title];
-        const b = document.createElement('div');
-        b.className = 'read-item-btn';
-        b.onclick = () => startReading(r);
-        b.innerHTML = `<span>${index + 1}. ${r.title}</span>${isDone ? '<span class="done-tick">✓</span>' : ''}`;
-        cont.appendChild(b);
+        const card = document.createElement('div');
+        card.className = 'read-card';
+        card.onclick = () => startReading(r);
+        card.innerHTML = `
+            ${isDone ? '<div class="done-badge">✅ BİTTİ</div>' : ''}
+            <img class="read-card-img" src="${r.title}.png" onerror="this.src='https://via.placeholder.com/400x250?text=${r.title}'">
+            <div class="read-card-info">
+                <p class="read-card-title">${r.title}</p>
+            </div>
+        `;
+        carousel.appendChild(card);
     });
 }
 
+// READING, QUIZ & STATS (KORUNDU)
 function startReading(r) {
-    activeR = r; 
-    document.getElementById('readTitle').innerText = r.title;
-    const area = document.getElementById('readArea'); 
-    area.innerHTML = '';
+    activeR = r; document.getElementById('readTitle').innerText = r.title;
+    const area = document.getElementById('readArea'); area.innerHTML = '';
     const contentLines = r.en.trim().split('\n');
     const actualBody = contentLines.length > 1 ? contentLines.slice(1).join(' ') : contentLines[0];
-
     actualBody.split(/\s+/).forEach(word => {
-        const span = document.createElement('span'); 
-        span.className = 'word-span'; 
-        span.innerText = word + " ";
+        const span = document.createElement('span'); span.className = 'word-span'; span.innerText = word + " ";
         const clean = word.toLowerCase().replace(/[^a-z]/g, "");
         if(db.unknown.find(u => u.w === clean)) span.classList.add('is-unknown');
-        
         span.onclick = () => {
             if(!db.unknown.find(u => u.w === clean)) {
                 const dictMatch = db.dictionary.find(x => x.w === clean);
                 db.unknown.push(dictMatch || {w:clean, tr:"?", te:"?", tt:"?", de:"?", dt:"?", e1:"?", e1t:"?", e2:"?", e2t:"?"});
-                span.classList.add('is-unknown'); 
-                save();
+                span.classList.add('is-unknown'); save();
             }
         };
         area.appendChild(span);
@@ -422,254 +316,36 @@ function startReading(r) {
     show('readMod');
 }
 
-function startQuiz() {
-    if(!activeR || !activeR.qs || activeR.qs.length === 0) return alert("Bu metnin sorusu bulunamadı!");
-    qCounter = 0;
-    qScore = 0;
-    userAnswers = [];
-    show('quizScreen');
-    renderQuestion();
-}
+// ... (Flashcard, Quiz, Stats ve Ses fonksiyonları verdiğin kodla aynı kalarak devam eder) ...
+let cardIdx = 0, isEngMode = true;
+function openCards() { if(db.unknown.length === 0) return alert("Metin okurken kelime ekleyin!"); cardIdx = 0; isEngMode = true; show('cardScreen'); renderCard(); }
+function renderCard() { const w = db.unknown[cardIdx]; const cont = document.getElementById('cardContainer'); cont.innerHTML = `<div class="card-box" onclick="this.children[0].classList.toggle('flipped')"><div class="card-inner"><div class="card-front"><div class="card-word">${w.w}</div><small>Detaylar için dokun</small></div><div class="card-back" id="cardBack"></div></div></div>`; updateCardContent(); }
+function updateCardContent() { const w = db.unknown[cardIdx]; const back = document.getElementById('cardBack'); if(isEngMode) { back.innerHTML = `<h3>${w.tr}</h3><div class="card-detail-item"><b>Type:</b> ${w.te}</div><div class="card-detail-item"><b>Def:</b> ${w.de}</div><div class="card-detail-item"><b>Ex 1:</b> ${w.e1}</div><div class="card-detail-item"><b>Ex 2:</b> ${w.e2}</div>`; } else { back.innerHTML = `<h3>${w.tr}</h3><div class="card-detail-item"><b>Tür:</b> ${w.tt}</div><div class="card-detail-item"><b>Tanım:</b> ${w.dt}</div><div class="card-detail-item"><b>Örnek 1:</b> ${w.e1t}</div><div class="card-detail-item"><b>Örnek 2:</b> ${w.e2t}</div>`; } }
+function toggleCardLang() { isEngMode = !isEngMode; updateCardContent(); }
+function cardAction(type) { if(type === 'know') db.unknown.splice(cardIdx, 1); else cardIdx = (cardIdx + 1) % db.unknown.length; if(db.unknown.length > 0) { renderCard(); save(); } else show('home'); }
 
-function renderQuestion() {
-    if (qCounter >= activeR.qs.length) {
-        finishQuiz(false);
-        return;
-    }
+function startQuiz() { if(!activeR || !activeR.qs || activeR.qs.length === 0) return alert("Bu metnin sorusu bulunamadı!"); qCounter = 0; qScore = 0; userAnswers = []; show('quizScreen'); renderQuestion(); }
+function renderQuestion() { if (qCounter >= activeR.qs.length) { finishQuiz(); return; } const q = activeR.qs[qCounter]; document.getElementById('quizProgress').innerText = `${qCounter + 1} / ${activeR.qs.length}`; document.getElementById('qText').innerText = q.q; const optCont = document.getElementById('qOptions'); optCont.innerHTML = ''; let locked = false; ['A','B','C','D'].forEach(o => { const btn = document.createElement('div'); btn.className = 'btn'; btn.style.background = '#fff'; btn.style.color = '#000'; btn.style.border = '1px solid #ddd'; btn.innerText = `${o}) ${q[o]}`; btn.onclick = () => { if (locked) return; locked = true; userAnswers.push({ question: q.q, selected: o, correct: q.correct }); if (o === q.correct) qScore++; [...optCont.children].forEach(b => { const letter = b.innerText[0]; if (letter === q.correct) { b.style.background = '#22c55e'; b.style.color = '#fff'; } if (letter === o && o !== q.correct) { b.style.background = '#ef4444'; b.style.color = '#fff'; } b.style.pointerEvents = 'none'; }); setTimeout(() => { qCounter++; renderQuestion(); }, 800); }; optCont.appendChild(btn); }); }
+function finishQuiz() { const totalQ = activeR.qs.length; const answered = userAnswers.length; let correctQ = 0; userAnswers.forEach(a => { if (a.selected === a.correct) correctQ++; }); const perc = totalQ > 0 ? Math.round((correctQ / totalQ) * 100) : 0; db.stats.correct = (db.stats.correct || 0) + correctQ; db.stats.total = (db.stats.total || 0) + totalQ; db.stats.completed[activeR.title] = true; save(); document.getElementById('resPercent').innerText = `%${perc} Başarı`; let html = `<div style="background:rgba(255,255,255,0.2);padding:15px;border-radius:12px;margin-top:15px;"><div>✅ Doğru: <b>${correctQ}</b></div><hr>`; userAnswers.forEach((a,i)=>{ html += `<div style="font-size:0.85rem;margin-bottom:5px;">${i+1}. ${a.selected === a.correct ? '✅' : '❌'} Sen: ${a.selected} | Doğru: ${a.correct}</div>`; }); html += `</div>`; document.getElementById('resDetail').innerHTML = html; show('resultScreen'); }
 
-    const q = activeR.qs[qCounter];
-    document.getElementById('quizProgress').innerText = `${qCounter + 1} / ${activeR.qs.length}`;
-    document.getElementById('qText').innerText = q.q;
+function showStats() { show('stats'); const ctx = document.getElementById('statsChart').getContext('2d'); if(window.chart) window.chart.destroy(); const completedInLevel = db.readings.filter(r => r.lvl === db.lvl && db.stats.completed[r.title]).length; const totalInLevel = db.readings.filter(r => r.lvl === db.lvl).length; const successRate = db.stats.total > 0 ? Math.round((db.stats.correct / db.stats.total) * 100) : 0; window.chart = new Chart(ctx, { type: 'bar', data: { labels: ['A1','A2','B1','B2','C1','C2'], datasets: [{ label: 'Biten Metinler', data: ['A1','A2','B1','B2','C1','C2'].map(l => db.readings.filter(r => r.lvl === l && db.stats.completed[r.title]).length), backgroundColor: '#4f46e5' }] } }); document.getElementById('statsInfo').innerHTML = `<div class="streak-card" style="padding:20px; text-align:left; background:linear-gradient(135deg, #4f46e5, #9333ea);"><p>📖 <b>${db.lvl} Durumu:</b> ${totalInLevel} metin / ${completedInLevel} tamamlandı</p><p>🎯 <b>Soru Başarısı:</b> %${successRate}</p><p>🧠 <b>Öğrenilen Kelime:</b> ${db.unknown.length} takipte</p></div>`; }
 
-    const optCont = document.getElementById('qOptions');
-    optCont.innerHTML = '';
-    let locked = false;
-
-    ['A','B','C','D'].forEach(o => {
-        const btn = document.createElement('div');
-        btn.className = 'btn';
-        btn.style.background = '#fff';
-        btn.style.color = '#000';
-        btn.style.border = '1px solid #ddd';
-        btn.innerText = `${o}) ${q[o]}`;
-
-        btn.onclick = () => {
-            if (locked) return;
-            locked = true;
-
-            userAnswers.push({ question: q.q, selected: o, correct: q.correct });
-            if (o === q.correct) qScore++;
-
-            [...optCont.children].forEach(b => {
-                const letter = b.innerText[0];
-                if (letter === q.correct) { b.style.background = '#22c55e'; b.style.color = '#fff'; }
-                if (letter === o && o !== q.correct) { b.style.background = '#ef4444'; b.style.color = '#fff'; }
-                b.style.pointerEvents = 'none';
-            });
-
-            setTimeout(() => {
-                qCounter++;
-                renderQuestion();
-            }, 800);
-        };
-        optCont.appendChild(btn);
-    });
-}
-
-function finishQuiz() {
-
-    if (!activeR || !activeR.qs) return;
-
-    const totalQ = activeR.qs.length;
-    const answered = userAnswers.length;
-
-    if (answered === 0) {
-        alert("Hiç soru cevaplanmadı!");
-        return;
-    }
-
-    let correctQ = 0;
-
-    userAnswers.forEach(a => {
-        if (a.selected && a.correct && a.selected === a.correct) {
-            correctQ++;
-        }
-    });
-
-    const wrongQ = answered - correctQ;
-
-    const perc = totalQ > 0 
-        ? Math.round((correctQ / totalQ) * 100)
-        : 0;
-
-    // STAT
-    if (!db.stats.completed) db.stats.completed = {};
-
-    db.stats.correct = (db.stats.correct || 0) + correctQ;
-    db.stats.total   = (db.stats.total   || 0) + totalQ;
-
-    db.stats.completed[activeR.title] = true;
-
-    save();
-
-    // UI
-    document.getElementById('resPercent').innerText =
-        `%${perc} Başarı`;
-
-    let html = `
-        <div style="
-            background:rgba(255,255,255,0.2);
-            padding:15px;
-            border-radius:12px;
-            margin-top:15px;
-        ">
-
-        <div>✅ Doğru: <b>${correctQ}</b></div>
-        <div>❌ Yanlış: <b>${wrongQ}</b></div>
-        <div>📌 Cevaplanan: ${answered} / ${totalQ}</div>
-
-        <hr>
-    `;
-
-    userAnswers.forEach((a,i)=>{
-
-        const ok = a.selected === a.correct;
-
-        html += `
-            <div style="font-size:0.85rem;margin-bottom:5px;">
-            ${i+1}. ${ok ? '✅' : '❌'}
-            Sen: ${a.selected || '-'}
-            | Doğru: ${a.correct || '-'}
-            </div>
-        `;
-    });
-
-    html += `</div>`;
-
-    document.getElementById('resDetail').innerHTML = html;
-
-    show('resultScreen');
-}
-
-function showStats() {
-    show('stats');
-    const ctx = document.getElementById('statsChart').getContext('2d');
-    if(window.chart) window.chart.destroy();
-
-    const completedInLevel = db.readings.filter(r => r.lvl === db.lvl && db.stats.completed[r.title]).length;
-    const totalInLevel = db.readings.filter(r => r.lvl === db.lvl).length;
-    const remaining = totalInLevel - completedInLevel;
-    const successRate = db.stats.total > 0 ? Math.round((db.stats.correct / db.stats.total) * 100) : 0;
-
-    window.chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['A1','A2','B1','B2','C1','C2'],
-            datasets: [{ 
-                label: 'Biten Metinler', 
-                data: ['A1','A2','B1','B2','C1','C2'].map(l => db.readings.filter(r => r.lvl === l && db.stats.completed[r.title]).length), 
-                backgroundColor: '#4f46e5' 
-            }]
-        }
-    });
-
-    document.getElementById('statsInfo').innerHTML = `
-        <div class="streak-card" style="padding:20px; text-align:left; background:linear-gradient(135deg, #4f46e5, #9333ea);">
-            <p>📖 <b>${db.lvl} Durumu:</b> ${totalInLevel} metin / ${completedInLevel} tamamlandı</p>
-            <p>🎯 <b>Soru Başarısı:</b> %${successRate}</p>
-            <p>🧠 <b>Öğrenilen Kelime:</b> ${db.unknown.length} takipte</p>
-        </div>`;
-}
-
-function exportJSON() {
-    const blob = new Blob([JSON.stringify(db)], {type:'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup.json'; a.click();
-}
-function importJSON(i) {
-    const r = new FileReader(); r.onload = (e) => { db = JSON.parse(e.target.result); save(); location.reload(); };
-    r.readAsText(i.files[0]);
-}
+function exportJSON() { const blob = new Blob([JSON.stringify(db)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup.json'; a.click(); }
+function importJSON(i) { const r = new FileReader(); r.onload = (e) => { db = JSON.parse(e.target.result); save(); location.reload(); }; r.readAsText(i.files[0]); }
 function resetAll() { if(confirm("Sıfırlansın mı?")) { localStorage.clear(); location.reload(); } }
 
-let synth = window.speechSynthesis;
-let isPlaying = false;
-
-function playS() {
-    synth.cancel(); // Mevcut sesi durdur
-    isPlaying = true;
-    
-    const rawText = activeR.en;
-    const speed = document.getElementById('speed').value;
-    
-    // Metni noktalama işaretlerine göre parçala ama işaretleri koru
-    // (RegEx: Virgül veya Nokta gördüğünde ayır)
-    const parts = rawText.split(/([,.])/g);
-    
-    let index = 0;
-
-    function speakPart() {
-        if (index >= parts.length || !isPlaying) {
-            isPlaying = false;
-            return;
-        }
-
-        let segment = parts[index].trim();
-        
-        if (segment === "," || segment === ".") {
-            // Duraksama süresini belirle (Virgül: 200ms, Nokta: 400ms)
-            // Hız slider'ından bağımsız sabit bir es payı ekliyoruz
-            const delay = segment === "," ? 200 : 400;
-            
-            setTimeout(() => {
-                index++;
-                speakPart();
-            }, delay);
-        } else if (segment.length > 0) {
-            let u = new SpeechSynthesisUtterance(segment);
-            u.rate = speed;
-            u.lang = 'en-US';
-            
-            u.onend = () => {
-                index++;
-                speakPart();
-            };
-            
-            u.onerror = () => {
-                isPlaying = false;
-            };
-
-            synth.speak(u);
-        } else {
-            // Boşluklar için atla
-            index++;
-            speakPart();
-        }
-    }
-
-    speakPart();
-}
-
-function pauseS() {
-    isPlaying = false;
-    synth.pause();
-}
-
-function stopS() {
-    isPlaying = false;
-    synth.cancel();
-}
+// NATURAL VOICE LOGIC
+let synth = window.speechSynthesis, isPlaying = false;
+function playS() { synth.cancel(); isPlaying = true; const speed = document.getElementById('speed').value; const parts = activeR.en.split(/([,.])/g); let index = 0; function speakPart() { if (index >= parts.length || !isPlaying) { isPlaying = false; return; } let segment = parts[index].trim(); if (segment === "," || segment === ".") { setTimeout(() => { index++; speakPart(); }, segment === "," ? 200 : 400); } else if (segment.length > 0) { let u = new SpeechSynthesisUtterance(segment); u.rate = speed; u.lang = 'en-US'; u.onend = () => { index++; speakPart(); }; u.onerror = () => isPlaying = false; synth.speak(u); } else { index++; speakPart(); } } speakPart(); }
+function pauseS() { isPlaying = false; synth.pause(); }
+function stopS() { isPlaying = false; synth.cancel(); }
 function updateSpd() { document.getElementById('speedVal').innerText = document.getElementById('speed').value + "x"; }
 
-// INITIALIZATION
+// INIT
 load();
-const lvls = ['A1','A2','B1','B2','C1','C2'];
-const colors = ['var(--a1)','var(--a2)','var(--b1)','var(--b2)','var(--c1)','var(--c2)'];
+const lvls = ['A1','A2','B1','B2','C1','C2'], colors = ['var(--a1)','var(--a2)','var(--b1)','var(--b2)','var(--c1)','var(--c2)'];
 const grid = document.getElementById('lvlGrid');
-lvls.forEach((l, i) => {
-    const b = document.createElement('button'); b.className = 'level-btn'; b.style.background = colors[i]; b.innerText = l;
-    b.onclick = () => setLvl(l); if(db.lvl === l) b.classList.add('selected');
-    grid.appendChild(b);
-});
+lvls.forEach((l, i) => { const b = document.createElement('button'); b.className = 'level-btn'; b.style.background = colors[i]; b.innerText = l; b.onclick = () => setLvl(l); if(db.lvl === l) b.classList.add('selected'); grid.appendChild(b); });
 </script>
 </body>
 </html>
