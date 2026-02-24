@@ -514,6 +514,44 @@ body {
 }
 .card-progress { text-align: center; color: var(--muted); font-size: .85rem; margin-bottom: 14px; }
 
+/* ---- PRONUNCIATION BUTTON ---- */
+.speak-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: none;
+  border: 2px solid var(--lvl-main);
+  border-radius: 50px;
+  color: var(--lvl-dark);
+  font-size: .8rem;
+  font-weight: 700;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: .2s;
+  margin-top: 8px;
+  letter-spacing: .3px;
+}
+.speak-btn:hover { background: var(--lvl-main); color: white; }
+.speak-btn.speaking { background: var(--lvl-main); color: white; animation: pulse-speak .6s infinite alternate; }
+@keyframes pulse-speak { from { opacity: 1; } to { opacity: .6; } }
+.speak-btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,.25);
+  border: 1.5px solid rgba(255,255,255,.6);
+  border-radius: 50px;
+  color: white;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: .2s;
+  margin-top: 6px;
+}
+.speak-btn-back:hover { background: rgba(255,255,255,.4); }
+
 /* ---- QUIZ ---- */
 .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .q-progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 50px; margin-bottom: 24px; overflow: hidden; }
@@ -539,13 +577,54 @@ body {
 .result-hero {
   background: linear-gradient(135deg, var(--lvl-main), var(--lvl-dark));
   border-radius: 24px;
-  padding: 32px;
+  padding: 28px 32px;
   text-align: center;
   color: white;
   margin-bottom: 20px;
 }
 .result-percent { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 700; }
-.result-answers { background: white; border-radius: 18px; padding: 18px; border: 1px solid var(--border); }
+.result-score-row { display: flex; justify-content: center; gap: 24px; margin-top: 14px; }
+.result-score-box { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.result-score-num { font-size: 1.5rem; font-weight: 800; font-family: 'Playfair Display', serif; }
+.result-score-lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: .85; }
+.result-divider { width: 1px; background: rgba(255,255,255,.3); align-self: stretch; }
+
+/* Soru listesi */
+.result-answers { margin-top: 4px; }
+.result-answers-title {
+  font-size: .75rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--muted); margin-bottom: 12px;
+}
+.ans-card {
+  background: white;
+  border-radius: 16px;
+  border: 2px solid var(--border);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.ans-card.correct-card { border-color: #bbf7d0; }
+.ans-card.wrong-card   { border-color: #fecaca; }
+.ans-card-header {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px 10px;
+}
+.ans-badge {
+  font-size: 1.1rem; flex-shrink: 0; margin-top: 1px;
+}
+.ans-question {
+  font-size: .83rem; font-weight: 600; color: var(--text);
+  line-height: 1.4; flex: 1;
+}
+.ans-card-body { padding: 0 14px 12px; display: flex; flex-direction: column; gap: 5px; }
+.ans-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .78rem; padding: 6px 10px;
+  border-radius: 8px;
+}
+.ans-row.user-correct { background: #dcfce7; color: #166534; font-weight: 700; }
+.ans-row.user-wrong   { background: #fee2e2; color: #991b1b; font-weight: 700; }
+.ans-row.show-correct { background: #dcfce7; color: #166534; font-weight: 700; }
+.ans-row-lbl { font-size: .65rem; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; opacity: .7; min-width: 52px; }
 .ans-item { font-size: .85rem; padding: 6px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
 .ans-item:last-child { border: none; }
 
@@ -770,12 +849,30 @@ textarea:focus { border-color: var(--lvl-main); outline: none; }
   <!-- ===== RESULT ===== -->
   <div id="resultScreen" class="screen">
     <div class="result-hero">
-      <div class="hero-target" style="font-size:3rem;" id="resEmoji">🎯</div>
+      <div style="font-size:2.5rem;" id="resEmoji">🎯</div>
       <div class="result-percent" id="resPercent">0%</div>
-      <div id="resMsg" style="font-style:italic;opacity:.88;margin-top:6px;font-size:.9rem;"></div>
+      <div id="resMsg" style="font-style:italic;opacity:.88;margin-top:4px;font-size:.85rem;"></div>
+      <div class="result-score-row">
+        <div class="result-score-box">
+          <span class="result-score-num" id="resCorrectNum">0</span>
+          <span class="result-score-lbl">✅ Doğru</span>
+        </div>
+        <div class="result-divider"></div>
+        <div class="result-score-box">
+          <span class="result-score-num" id="resWrongNum">0</span>
+          <span class="result-score-lbl">❌ Yanlış</span>
+        </div>
+        <div class="result-divider"></div>
+        <div class="result-score-box">
+          <span class="result-score-num" id="resTotalNum">0</span>
+          <span class="result-score-lbl">📝 Toplam</span>
+        </div>
+      </div>
     </div>
+    <div class="result-answers-title">Soru Analizi</div>
     <div class="result-answers" id="resDetail"></div>
     <button class="btn btn-success" style="margin-top:16px;" onclick="show('home')">🏠 <span data-i18n="goHome">Go Home</span></button>
+    <button class="btn btn-secondary" style="margin-top:8px;" onclick="show('readMod')">📖 Metne Dön</button>
   </div>
 
   <!-- ===== FLASHCARDS ===== -->
@@ -1116,12 +1213,21 @@ function renderReadingContent() {
       if (clean && db.unknown.find(u => u.w === clean)) span.classList.add('is-unknown');
       span.onclick = () => {
         if (!clean) return;
-        if (!db.unknown.find(u => u.w === clean)) {
-          const match = db.dictionary.find(x => x.w === clean);
-          db.unknown.push(match || { w:clean, tr:'?', te:'?', tt:'?', de:'?', dt:'?', e1:'?', e1t:'?', e2:'?', e2t:'?' });
+        const existing = db.unknown.find(u => u.w === clean);
+        const match = db.dictionary.find(x => x.w === clean);
+        if (!existing) {
+          // Kelime kasada yok — ekle (sözlükten tam veriyle veya geçici)
+          db.unknown.push(match ? {...match} : { w:clean, tr:'?', te:'?', tt:'?', de:'?', dt:'?', e1:'?', e1t:'?', e2:'?', e2t:'?' });
           span.classList.add('is-unknown');
           save();
           notify(`"${clean}" → Kasaya eklendi 📚`);
+        } else if (existing && match && existing.tr === '?') {
+          // Kasada var ama ? ile kaydedilmiş — sözlükten güncelle
+          Object.assign(existing, match);
+          save();
+          notify(`"${clean}" → Sözlükten güncellendi ✨`);
+        } else {
+          notify(`"${clean}" zaten kasada 📌`);
         }
       };
       para.appendChild(span);
@@ -1219,6 +1325,19 @@ let cardList = []; // aktif kart listesi
 
 function openCards() {
   if (db.unknown.length === 0) { notify('Hikayeleri oku ve kelimelere dokun! 📖'); return; }
+  
+  // Sözlük yüklüyse, kasadaki eksik (?) kelimeleri otomatik güncelle
+  let enriched = 0;
+  if (db.dictionary.length > 0) {
+    db.unknown.forEach(u => {
+      if (u.tr === '?' || !u.tr) {
+        const match = db.dictionary.find(x => x.w === u.w);
+        if (match) { Object.assign(u, match); enriched++; }
+      }
+    });
+    if (enriched > 0) { save(); notify(`✨ ${enriched} kelime sözlükten güncellendi`); }
+  }
+
   cardSource = 'unknown';
   cardList = db.unknown;
   cardIdx = 0; isEngMode = true;
@@ -1240,20 +1359,51 @@ function openDictCards() {
   renderCard();
 }
 
+// ---- PRONUNCIATION ----
+function speakWord(text, lang) {
+  if (!text || text === '—' || text === '?') return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = lang || 'en-US';
+  utt.rate = 0.85;
+  utt.pitch = 1;
+
+  // Butonu speaking moduna al
+  const btn = document.getElementById('speakFront');
+  if (btn) { btn.classList.add('speaking'); btn.textContent = '🔊 ...'; }
+  utt.onend = () => {
+    if (btn) { btn.classList.remove('speaking'); btn.innerHTML = '🔊 Telaffuz'; }
+  };
+  utt.onerror = () => {
+    if (btn) { btn.classList.remove('speaking'); btn.innerHTML = '🔊 Telaffuz'; }
+  };
+  window.speechSynthesis.speak(utt);
+}
+
+// Kart çevirme — hoparlör butonuna basıldığında kartı çevirme
+function handleCardClick(e, box) {
+  // speak-btn veya speak-btn-back'e tıklandıysa çevirme
+  if (e.target.closest('.speak-btn') || e.target.closest('.speak-btn-back')) return;
+  box.querySelector('.card-inner').classList.toggle('flipped');
+}
+
 function renderCard() {
   document.getElementById('cardProgress').innerText = `${cardIdx + 1} / ${cardList.length}`;
   const w = cardList[cardIdx];
   const cont = document.getElementById('cardContainer');
   cont.innerHTML = `
-    <div class="card-box" onclick="this.querySelector('.card-inner').classList.toggle('flipped')">
+    <div class="card-box" onclick="handleCardClick(event, this)">
       <div class="card-inner">
         <div class="card-face card-front">
           <div style="font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:12px;">
             ${isEngMode ? 'English → Turkish' : 'Türkçe Mod'}
           </div>
           <div class="card-word">${w.w}</div>
-          <div style="width:40px;height:3px;background:var(--lvl-main);border-radius:2px;margin:14px 0;"></div>
-          <div class="card-hint">Çevirmek için dokun 👆</div>
+          <div style="width:40px;height:3px;background:var(--lvl-main);border-radius:2px;margin:12px 0 8px;"></div>
+          <button class="speak-btn" id="speakFront" onclick="event.stopPropagation(); speakWord('${w.w}', 'en-US')">
+            🔊 Telaffuz
+          </button>
+          <div class="card-hint" style="margin-top:10px;">Çevirmek için dokun 👆</div>
         </div>
         <div class="card-face card-back" id="cardBack"></div>
       </div>
@@ -1262,65 +1412,68 @@ function renderCard() {
 }
 
 function updateCardContent() {
-  const w = cardList[cardIdx];
+  let w = cardList[cardIdx];
+  
+  // Anlık zenginleştirme: ? varsa sözlükten güncelle
+  if (w && (w.tr === '?' || !w.tr) && db.dictionary.length > 0) {
+    const match = db.dictionary.find(x => x.w === w.w);
+    if (match) {
+      Object.assign(w, match);
+      if (cardSource === 'unknown') save();
+    }
+  }
+  
+  // ? değerleri kullanıcıya gösterme — yerine "—" koy
+  const val = (v) => (!v || v === '?') ? '—' : v;
+
   const back = document.getElementById('cardBack');
 
   if (isEngMode) {
-    // EN mode: all English content
-    // w.tr = Turkish meaning (shown as main translation)
-    // w.te = English type (Noun / Verb etc.)
-    // w.de = English definition
-    // w.e1 = English example 1
-    // w.e2 = English example 2
     back.innerHTML = `
       <div class="card-back-header">
-        <div class="card-translation">${w.tr || '—'}</div>
+        <div class="card-translation">${val(w.tr)}</div>
+        <button class="speak-btn-back" onclick="speakWord('${w.w}', 'en-US')">🔊 ${w.w}</button>
       </div>
       <div class="card-back-body">
         <div class="card-row">
-          <div class="card-row-label">📌 Tür</div>
-          <div class="card-row-text" style="font-weight:700;color:var(--lvl-dark);">${w.te || '—'}</div>
+          <div class="card-row-label">📌 Type</div>
+          <div class="card-row-text" style="font-weight:700;color:var(--lvl-dark);">${val(w.te)}</div>
         </div>
         <div class="card-row">
           <div class="card-row-label">📖 Definition</div>
-          <div class="card-row-text">${w.de || '—'}</div>
+          <div class="card-row-text">${val(w.de)}</div>
         </div>
         <div class="card-row">
           <div class="card-row-label">💬 Example 1</div>
-          <div class="card-row-text" style="font-style:italic;">${w.e1 || '—'}</div>
+          <div class="card-row-text" style="font-style:italic;">${val(w.e1)}</div>
         </div>
         <div class="card-row" style="border-bottom:none;">
           <div class="card-row-label">💬 Example 2</div>
-          <div class="card-row-text" style="font-style:italic;">${w.e2 || '—'}</div>
+          <div class="card-row-text" style="font-style:italic;">${val(w.e2)}</div>
         </div>
       </div>`;
   } else {
-    // TR mode: all Turkish content
-    // w.tr  = Turkish meaning
-    // w.tt  = Turkish type (Edat / İsim etc.)
-    // w.dt  = Turkish definition
-    // w.e1t = Turkish example 1
-    // w.e2t = Turkish example 2
     back.innerHTML = `
       <div class="card-back-header" style="background:linear-gradient(135deg,#d97706,#92400e);">
-        <div class="card-translation">${w.tr || '—'}</div>
+        <div class="card-translation">${val(w.tr)}</div>
+        <button class="speak-btn-back" onclick="speakWord('${w.w}', 'en-US')">🔊 ${w.w}</button>
       </div>
       <div class="card-back-body">
         <div class="card-row">
           <div class="card-row-label">📌 Tür</div>
-          <div class="card-row-text" style="font-weight:700;color:#d97706;">${w.tt || '—'}</div>
+          <div class="card-row-text" style="font-weight:700;color:#d97706;">${val(w.tt)}</div>
         </div>
         <div class="card-row">
           <div class="card-row-label">📖 Tanım</div>
-          <div class="card-row-text">${w.dt || '—'}</div>
+          <div class="card-row-text">${val(w.dt)}</div>
         </div>
         <div class="card-row">
           <div class="card-row-label">💬 Örnek 1</div>
-          <div class="card-row-text" style="font-style:italic;">${w.e1t || '—'}</div>
+          <div class="card-row-text" style="font-style:italic;">${val(w.e1t)}</div>
         </div>
         <div class="card-row" style="border-bottom:none;">
           <div class="card-row-label">💬 Örnek 2</div>
-          <div class="card-row-text" style="font-style:italic;">${w.e2t || '—'}</div>
+          <div class="card-row-text" style="font-style:italic;">${val(w.e2t)}</div>
         </div>
       </div>`;
   }
@@ -1398,7 +1551,7 @@ function renderQuestion() {
     btn.onclick = () => {
       if (locked) return;
       locked = true;
-      userAnswers.push({ question:q.q, selected:o, correct:q.correct });
+      userAnswers.push({ question:q.q, selected:o, correct:q.correct, qObj: q });
       if (o === q.correct) qScore++;
       [...cont.children].forEach(b => {
         const letter = b.innerText[0];
@@ -1414,27 +1567,77 @@ function renderQuestion() {
 
 function finishQuiz() {
   const total = activeR.qs.length;
-  const perc = total > 0 ? Math.round((qScore / total) * 100) : 0;
-  db.stats.correct = (db.stats.correct||0) + qScore;
+  const correct = qScore;
+  const wrong = total - correct;
+  const perc = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+  db.stats.correct = (db.stats.correct||0) + correct;
   db.stats.total   = (db.stats.total||0) + total;
   db.stats.completed[activeR.title] = true;
   markToday();
   save();
 
+  // Hero kısmı
   document.getElementById('resPercent').innerText = `${perc}%`;
-  document.getElementById('resEmoji').innerText = perc >= 70 ? '🎯' : '☹️';
+  document.getElementById('resEmoji').innerText =
+    perc === 100 ? '🏆' : perc >= 80 ? '🎯' : perc >= 60 ? '💪' : '☹️';
   const L = db.lang;
   document.getElementById('resMsg').innerText = perc >= 70 ? i18n[L].wellDone : i18n[L].notYet;
+  document.getElementById('resCorrectNum').innerText = correct;
+  document.getElementById('resWrongNum').innerText   = wrong;
+  document.getElementById('resTotalNum').innerText   = total;
 
-  let html = '';
-  userAnswers.forEach((a,i) => {
-    html += `<div class="ans-item">
-      <span>${a.selected === a.correct ? '✅' : '❌'}</span>
-      <span style="flex:1;font-size:.82rem;">${a.question.substring(0,60)}…</span>
-      <span style="font-weight:700;color:${a.selected===a.correct?'#166534':'#991b1b'};">${a.selected}</span>
-    </div>`;
+  // Soru analizi — her soru için detaylı kart
+  const detail = document.getElementById('resDetail');
+  detail.innerHTML = '';
+
+  userAnswers.forEach((a, i) => {
+    const isCorrect = a.selected === a.correct;
+    const q = a.qObj || activeR.qs[i]; // tam soru objesi (A/B/C/D metinleri için)
+
+    const card = document.createElement('div');
+    card.className = `ans-card ${isCorrect ? 'correct-card' : 'wrong-card'}`;
+
+    // Soru başlığı
+    const header = document.createElement('div');
+    header.className = 'ans-card-header';
+    header.innerHTML = `
+      <span class="ans-badge">${isCorrect ? '✅' : '❌'}</span>
+      <span class="ans-question">${i+1}. ${q ? q.q : a.question}</span>`;
+    card.appendChild(header);
+
+    // Cevap detayları
+    const body = document.createElement('div');
+    body.className = 'ans-card-body';
+
+    if (!isCorrect) {
+      // Yanlış cevap: kullanıcının seçtiği + doğru cevap göster
+      const userOptText = q && q[a.selected] ? `${a.selected}) ${q[a.selected]}` : a.selected;
+      const corrOptText = q && q[a.correct]   ? `${a.correct}) ${q[a.correct]}`   : a.correct;
+
+      body.innerHTML = `
+        <div class="ans-row user-wrong">
+          <span class="ans-row-lbl">Cevabın</span>
+          <span>${userOptText}</span>
+        </div>
+        <div class="ans-row show-correct">
+          <span class="ans-row-lbl">Doğrusu</span>
+          <span>${corrOptText}</span>
+        </div>`;
+    } else {
+      // Doğru cevap: sadece seçilen cevabı göster
+      const corrOptText = q && q[a.correct] ? `${a.correct}) ${q[a.correct]}` : a.correct;
+      body.innerHTML = `
+        <div class="ans-row user-correct">
+          <span class="ans-row-lbl">Cevabın</span>
+          <span>${corrOptText}</span>
+        </div>`;
+    }
+
+    card.appendChild(body);
+    detail.appendChild(card);
   });
-  document.getElementById('resDetail').innerHTML = html;
+
   show('resultScreen');
 }
 
