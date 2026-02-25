@@ -437,6 +437,11 @@ body {
   transition: background .15s;
 }
 .word-span:hover { background: rgba(79,70,229,.1); }
+.word-span.is-speaking {
+  background: rgba(251,191,36,.45);
+  border-radius: 4px;
+  transition: background .1s;
+}
 .word-tooltip {
   display: none;
   position: absolute;
@@ -2029,9 +2034,11 @@ function renderReadingContent() {
     const body = bodyLines.join(' ').trim();
 
     const para = document.createElement('p');
+    let wordIndex = 0;
     body.split(/\s+/).forEach(rawWord => {
       const span = document.createElement('span');
       span.className = 'word-span';
+      span.dataset.wi = wordIndex++;   // TTS highlight için index
       const clean = rawWord.toLowerCase().replace(/[^a-z]/g, '');
       const dictMatch = clean ? db.dictionary.find(x => x.w === clean) : null;
 
@@ -2053,14 +2060,12 @@ function renderReadingContent() {
         if (!clean) return;
         const existing = db.unknown.findIndex(u => u.w === clean);
         if (existing === -1) {
-          // Kasada yok — ekle
           db.unknown.push(dictMatch ? {...dictMatch} : { w:clean, tr:'?', te:'?', tt:'?', de:'?', dt:'?', e1:'?', e1t:'?', e2:'?', e2t:'?' });
           span.classList.add('is-unknown');
           save();
           const meaning = dictMatch ? ` (${dictMatch.tr})` : '';
           notify(`"${clean}"${meaning} → Kasaya eklendi 📚`);
         } else {
-          // Kasada var — çıkar
           db.unknown.splice(existing, 1);
           span.classList.remove('is-unknown');
           save();
@@ -2689,37 +2694,74 @@ function showStats() {
 // ---- AUDIO ----
 let synth = window.speechSynthesis, isPlaying = false;
 
+function highlightWord(idx) {
+  // Önceki highlight'ı kaldır
+  document.querySelectorAll('#readArea .is-speaking').forEach(el => el.classList.remove('is-speaking'));
+  if (idx === null) return;
+  const span = document.querySelector(`#readArea [data-wi="${idx}"]`);
+  if (!span) return;
+  span.classList.add('is-speaking');
+  // Span görünür alanda değilse scroll et
+  span.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
 function playS() {
   if (readLangMode === 'TR') { notify('Ses sadece İngilizce modda çalışır'); return; }
   synth.cancel(); isPlaying = true;
   const speed = parseFloat(document.getElementById('speed').value);
   const lines = (activeR?.en || '').trim().split('\n');
   const text = lines.length > 1 ? lines.slice(1).join(' ') : (lines[0] || '');
-  const parts = text.split(/([,.])/g);
-  let index = 0;
 
-  function speakPart() {
-    if (index >= parts.length || !isPlaying) { isPlaying = false; return; }
-    const seg = parts[index].trim();
-    if (seg === ',') {
-      // Virgül: kısa nefes
-      setTimeout(() => { index++; speakPart(); }, Math.round(300 / speed));
-    } else if (seg === '.') {
-      // Nokta: daha uzun bekleme
-      setTimeout(() => { index++; speakPart(); }, Math.round(650 / speed));
-    } else if (seg.length > 0) {
-      const u = new SpeechSynthesisUtterance(seg);
-      u.rate = speed; u.lang = 'en-US';
-      u.onend  = () => { index++; speakPart(); };
-      u.onerror = () => { isPlaying = false; };
-      synth.speak(u);
-    } else { index++; speakPart(); }
+  // Kelime listesi — nokta ve virgülleri de ayrı token olarak tut
+  const tokens = text.split(/\s+/);
+  let wi = 0; // word-span index (sadece gerçek kelimeler sayılır)
+
+  function speakToken(i) {
+    if (i >= tokens.length || !isPlaying) {
+      highlightWord(null);
+      isPlaying = false;
+      return;
+    }
+    const raw = tokens[i];
+    const word = raw.replace(/[,.]$/, ''); // sondaki noktalama kaldır
+    const punct = raw.length > word.length ? raw[raw.length - 1] : null;
+
+    if (!word.trim()) { speakToken(i + 1); return; }
+
+    // Highlight — bu token'ın span index'i
+    highlightWord(wi);
+    const currentWi = wi;
+    wi++;
+
+    const u = new SpeechSynthesisUtterance(word);
+    u.rate = speed; u.lang = 'en-US';
+    u.onend = () => {
+      if (!isPlaying) { highlightWord(null); return; }
+      if (punct === ',') {
+        setTimeout(() => speakToken(i + 1), Math.round(280 / speed));
+      } else if (punct === '.') {
+        setTimeout(() => speakToken(i + 1), Math.round(620 / speed));
+      } else {
+        speakToken(i + 1);
+      }
+    };
+    u.onerror = () => { highlightWord(null); isPlaying = false; };
+    synth.speak(u);
   }
-  speakPart();
+
+  speakToken(0);
 }
 
-function pauseS() { isPlaying = false; synth.pause(); }
-function stopS()  { isPlaying = false; synth.cancel(); }
+function pauseS() {
+  isPlaying = false;
+  synth.pause();
+  document.querySelectorAll('#readArea .is-speaking').forEach(el => el.classList.remove('is-speaking'));
+}
+function stopS() {
+  isPlaying = false;
+  synth.cancel();
+  document.querySelectorAll('#readArea .is-speaking').forEach(el => el.classList.remove('is-speaking'));
+}
 function updateSpd() {
   const v = document.getElementById('speed').value;
   document.getElementById('speedVal').innerText = parseFloat(v).toFixed(1) + '×';
