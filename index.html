@@ -995,6 +995,15 @@ body.dark-mode .tab-bar { background: rgba(30,41,59,.96); border-color: #334155;
 body.dark-mode textarea { background: #0f172a; color: var(--text); }
 body.dark-mode .ob-input { background: #0f172a; color: var(--text); border-color: #334155; }
 body.dark-mode .reading-body { background: #1a1a2e; color: #e2d9c8; }
+
+/* Reading ekran gece modu */
+.reading-screen.read-dark { background: #0f0f1a; }
+.reading-screen.read-dark .reading-header { background: #1a1a2e; border-color: #2d2d4e; }
+.reading-screen.read-dark .reading-title { color: #c4b5fd; }
+.reading-screen.read-dark #readArea { background: #0f0f1a; color: #e2d9c8; }
+.reading-screen.read-dark .audio-capsule button { background: #4f46e5; }
+.reading-screen.read-dark .back-nav { color: #a5b4fc; }
+.reading-screen.read-dark #readDarkBtn { background: #2d2d4e; }
 body.dark-mode .modal-sheet, body.dark-mode .modal-full { background: #1e293b; }
 body.dark-mode .profile-menu { background: #0f172a; }
 body.dark-mode .upload-section, body.dark-mode .stat-tile { background: #0f172a; border-color: #334155; }
@@ -1087,11 +1096,18 @@ body.dark-mode .daily-goal-bar { background: #0f172a; border-color: #334155; }
       <button class="ob-next" onclick="obSaveName()">Devam →</button>
     </div>
   </div>
-  <!-- Step 3: Level select -->
+  <!-- Step 3: Level select OR placement test -->
   <div class="ob-step" id="ob3">
     <div class="ob-emoji">📊</div>
-    <div class="ob-title">Seviyenizi Seçin</div>
-    <div class="ob-sub">İngilizce seviyenizi belirleyin. Daha sonra değiştirebilirsiniz.</div>
+    <div class="ob-title">Seviyenizi Belirleyin</div>
+    <div class="ob-sub">Seviyenizi kendiniz seçin ya da kısa bir sınav yapın.</div>
+
+    <!-- Sınav butonu -->
+    <button onclick="startPlacementTest()" style="width:100%;margin-bottom:16px;padding:16px;background:linear-gradient(135deg,var(--lvl-main),var(--lvl-dark));color:white;border:none;border-radius:16px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">
+      🎯 Seviye Tespit Sınavı Yap
+    </button>
+    <div style="font-size:.8rem;color:var(--muted);margin-bottom:16px;text-align:center;">— ya da kendiniz seçin —</div>
+
     <div class="ob-level-grid">
       <div class="ob-level-card" data-lvl="Sprout" onclick="selectObLevel(this)">
         <span class="lvl-icon">🌱</span>
@@ -1135,6 +1151,22 @@ body.dark-mode .daily-goal-bar { background: #0f172a; border-color: #334155; }
       <button class="ob-next" id="obLvlNext" disabled onclick="obFinishLevel()" style="opacity:.5;">Seçin →</button>
     </div>
   </div>
+
+  <!-- Step 5: Placement Test -->
+  <div class="ob-step" id="ob5">
+    <div class="ob-emoji" id="ptEmoji">📝</div>
+    <div class="ob-title" id="ptTitle">Seviye Sınavı</div>
+    <div class="ob-sub" id="ptSub">Aşağıdaki soruyu cevaplayın</div>
+    <div id="ptProgress" style="font-size:.8rem;color:var(--muted);margin-bottom:12px;"></div>
+    <div id="ptQuestion" style="font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:18px;min-height:50px;text-align:center;"></div>
+    <div id="ptOptions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:16px;"></div>
+    <div id="ptResult" style="display:none;text-align:center;padding:20px;">
+      <div style="font-size:3rem;margin-bottom:12px;" id="ptResultEmoji">🎯</div>
+      <div style="font-size:1.2rem;font-weight:700;margin-bottom:8px;" id="ptResultLevel"></div>
+      <div style="font-size:.9rem;color:var(--muted);" id="ptResultSub"></div>
+      <button onclick="obNext(4)" style="margin-top:20px;padding:14px 32px;background:linear-gradient(135deg,var(--lvl-main),var(--lvl-dark));color:white;border:none;border-radius:14px;font-size:1rem;font-weight:700;cursor:pointer;">Devam Et →</button>
+    </div>
+  </div>
   <!-- Step 4: Daily goal -->
   <div class="ob-step" id="ob4">
     <div class="ob-emoji">🎯</div>
@@ -1159,6 +1191,35 @@ body.dark-mode .daily-goal-bar { background: #0f172a; border-color: #334155; }
 </div>
 
 <!-- ===== MODALS ===== -->
+
+<!-- Level Gate Modal -->
+<div class="modal-overlay" id="levelGateModal" onclick="event.stopPropagation()">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;padding:10px 0 20px;">
+      <div style="font-size:3rem;margin-bottom:10px;" id="lgEmoji">🏆</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:8px;" id="lgTitle">Seviye Sınavı</div>
+      <div style="font-size:.9rem;color:var(--muted);margin-bottom:20px;" id="lgSub">Bir sonraki seviyeye geçmek için sınavı geçmelisiniz.</div>
+
+      <!-- Sınav sorusu -->
+      <div id="lgQuizArea">
+        <div id="lgProgress" style="font-size:.8rem;color:var(--muted);margin-bottom:8px;"></div>
+        <div id="lgQuestion" style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:16px;min-height:44px;"></div>
+        <div id="lgOptions" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;"></div>
+      </div>
+
+      <!-- Sonuç -->
+      <div id="lgResult" style="display:none;">
+        <div style="font-size:2.5rem;margin-bottom:8px;" id="lgResultEmoji">✅</div>
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px;" id="lgResultTitle"></div>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:20px;" id="lgResultSub"></div>
+        <button id="lgResultBtn" onclick="" style="width:100%;height:48px;background:linear-gradient(135deg,var(--lvl-main),var(--lvl-dark));color:white;border:none;border-radius:14px;font-weight:700;font-size:1rem;cursor:pointer;">—</button>
+        <button onclick="closeModal('levelGateModal')" style="width:100%;height:40px;background:none;border:none;color:var(--muted);cursor:pointer;margin-top:6px;font-size:.9rem;">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- About modal -->
 <div class="modal-overlay" id="aboutModal" onclick="closeModal('aboutModal')">
   <div class="modal-sheet" onclick="event.stopPropagation()">
@@ -1260,7 +1321,6 @@ body.dark-mode .daily-goal-bar { background: #0f172a; border-color: #334155; }
           <span id="lt-en" class="active">EN</span>
           <span id="lt-tr">TR</span>
         </div>
-        <button class="icon-btn" onclick="show('settings')" title="Settings">⚙️</button>
       </div>
     </div>
 
@@ -1380,21 +1440,27 @@ body.dark-mode .daily-goal-bar { background: #0f172a; border-color: #334155; }
   <!-- ===== READ MODE ===== -->
   <div id="readMod" class="screen reading-screen" style="padding:0;">
     <div class="reading-header">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
         <button class="back-nav" style="margin-bottom:0; flex-shrink:0;" onclick="stopS(); show('readList')">← <span data-i18n="back">Back</span></button>
-        <div class="reading-title" id="readTitle" style="flex:1;margin:0;text-align:center;font-size:1rem;"></div>
-        <button class="btn btn-warning" id="readLangToggle" style="height:34px; width:auto; padding:0 12px; font-size:.78rem; margin:0; flex-shrink:0;" onclick="toggleReadLang()">🌐 TR</button>
-      </div>
-      <!-- Ses kontrolleri başlığın altında -->
-      <div class="audio-capsule">
-        <button onclick="playS()" title="Play">▶</button>
-        <button onclick="pauseS()" title="Pause">⏸</button>
-        <button onclick="stopS()" title="Stop">⏹</button>
-        <div class="speed-wrap">
-          <input type="range" id="speed" min="0.5" max="1.5" step="0.1" value="1" oninput="updateSpd()">
-          <span class="speed-label" id="speedVal">1.0×</span>
+        <div class="reading-title" id="readTitle" style="flex:1;margin:0;text-align:center;font-size:.95rem;"></div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button id="readDarkBtn" title="Gece Modu" onclick="toggleReadDark()" style="height:34px;width:34px;border-radius:50%;border:none;background:var(--border);cursor:pointer;font-size:1rem;">🌙</button>
+          <button class="btn btn-warning" id="readLangToggle" style="height:34px;width:auto;padding:0 10px;font-size:.78rem;margin:0;" onclick="toggleReadLang()">🌐 TR</button>
         </div>
-        <button class="quiz-fab" onclick="startQuiz()" style="border-radius:20px;width:auto;padding:0 12px;font-size:.78rem;font-weight:700;height:32px;">📝 Quiz</button>
+      </div>
+      <!-- Ses kontrolleri + Quiz butonu -->
+      <div style="display:flex;align-items:center;gap:6px;padding:8px 0 2px;">
+        <div class="audio-capsule" style="flex:1;">
+          <button onclick="playS()" title="Baştan Oynat">▶</button>
+          <button onclick="resumeS()" title="Devam Et">⏯</button>
+          <button onclick="pauseS()" title="Duraklat">⏸</button>
+          <button onclick="stopS()" title="Durdur">⏹</button>
+          <div class="speed-wrap">
+            <input type="range" id="speed" min="0.5" max="1.5" step="0.1" value="1" oninput="updateSpd()">
+            <span class="speed-label" id="speedVal">1.0×</span>
+          </div>
+        </div>
+        <button onclick="startQuiz()" style="height:36px;padding:0 14px;background:var(--lvl-dark);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:.8rem;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;">📝 Quiz</button>
       </div>
     </div>
     <div id="readArea" class="reading-body"></div>
@@ -1617,9 +1683,10 @@ body.dark-mode .daily-goal-bar { background: #0f172a; border-color: #334155; }
     <div id="adminStats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;"></div>
 
     <!-- Tab navigation -->
-    <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid var(--border);padding-bottom:12px;">
+    <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid var(--border);padding-bottom:12px;flex-wrap:wrap;">
       <button class="admin-tab-btn active" id="atab-users" onclick="adminTabGo('users')">👥 Kullanıcılar</button>
       <button class="admin-tab-btn" id="atab-data" onclick="adminTabGo('data')">📦 Veriler</button>
+      <button class="admin-tab-btn" id="atab-edit" onclick="adminTabGo('edit')">✏️ Düzenle</button>
       <button class="admin-tab-btn" id="atab-settings" onclick="adminTabGo('settings')">⚙️ Ayarlar</button>
     </div>
 
@@ -1658,6 +1725,52 @@ body.dark-mode .daily-goal-bar { background: #0f172a; border-color: #334155; }
       <div style="background:var(--surface);border-radius:16px;padding:18px;border:1px solid var(--border);">
         <div style="font-weight:700;margin-bottom:8px;">💾 Tüm Veriyi Dışa Aktar</div>
         <button onclick="adminExportAll()" style="width:100%;height:40px;background:var(--lvl-soft);color:var(--lvl-dark);border:none;border-radius:10px;cursor:pointer;font-weight:600;font-size:.85rem;">📥 admin_backup.json İndir</button>
+      </div>
+    </div>
+
+    <!-- Edit tab -->
+    <div id="adminTab-edit" style="display:none;">
+      <div style="font-weight:700;margin-bottom:12px;font-size:.9rem;color:var(--muted);">METİN DÜZENLEME</div>
+
+      <!-- Metin seçici -->
+      <div style="background:var(--surface);border-radius:16px;padding:18px;margin-bottom:12px;border:1px solid var(--border);">
+        <div style="font-weight:700;margin-bottom:10px;">📖 Metin Seç</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <select id="adminEditLevel" onchange="adminFilterEditList()" style="flex:1;border:2px solid var(--border);border-radius:10px;padding:9px 12px;font-size:.85rem;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);">
+            <option value="">Tüm Seviyeler</option>
+            <option value="Sprout">🌱 Sprout (A1)</option>
+            <option value="Sapling">🌿 Sapling (A2)</option>
+            <option value="Tree">🌳 Tree (B1)</option>
+            <option value="Forest">🌲 Forest (B2)</option>
+            <option value="Mountain">🏔️ Mountain (C1)</option>
+            <option value="Galaxy">🚀 Galaxy (C2)</option>
+          </select>
+          <input type="text" id="adminEditSearch" oninput="adminFilterEditList()" placeholder="Metin ara..." style="flex:2;border:2px solid var(--border);border-radius:10px;padding:9px 12px;font-size:.85rem;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);">
+        </div>
+        <select id="adminEditList" size="6" onchange="adminLoadEditText()" style="width:100%;border:2px solid var(--border);border-radius:10px;padding:8px;font-size:.82rem;font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);">
+          <option value="">— önce seviye seçin —</option>
+        </select>
+      </div>
+
+      <!-- Editör -->
+      <div id="adminEditPanel" style="display:none;">
+        <div style="background:var(--surface);border-radius:16px;padding:18px;margin-bottom:12px;border:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-weight:700;" id="adminEditTitle">—</div>
+            <span id="adminEditLvlBadge" style="font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--lvl-soft);color:var(--lvl-dark);"></span>
+          </div>
+
+          <div style="font-size:.82rem;color:var(--muted);margin-bottom:4px;">📝 İngilizce Metin</div>
+          <textarea id="adminEditEn" rows="8" style="width:100%;border:2px solid var(--border);border-radius:10px;padding:12px;font-size:.82rem;font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+
+          <div style="font-size:.82rem;color:var(--muted);margin-bottom:4px;">🇹🇷 Türkçe Çeviri</div>
+          <textarea id="adminEditTr" rows="8" style="width:100%;border:2px solid var(--border);border-radius:10px;padding:12px;font-size:.82rem;font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+
+          <div style="display:flex;gap:8px;">
+            <button onclick="adminSaveEdit()" style="flex:2;height:42px;background:linear-gradient(135deg,#22c55e,#16a34a);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:.9rem;">💾 Kaydet</button>
+            <button onclick="adminCancelEdit()" style="flex:1;height:42px;background:var(--border);color:var(--text);border:none;border-radius:10px;cursor:pointer;font-size:.85rem;">İptal</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1853,7 +1966,7 @@ function applyLevel(id) {
 function buildLevelGrid() {
   const grid = document.getElementById('lvlGrid');
   grid.innerHTML = '';
-  LEVELS.forEach(l => {
+  LEVELS.forEach((l, i) => {
     const btn = document.createElement('button');
     btn.className = 'level-btn';
     btn.dataset.lvl = l.id;
@@ -1862,7 +1975,20 @@ function buildLevelGrid() {
       <span class="lvl-icon">${l.icon}</span>
       <span>${l.id}</span>
       <span class="lvl-cefr">${l.cefr}</span>`;
-    btn.onclick = () => applyLevel(l.id);
+    btn.onclick = () => {
+      const currentIdx = LEVELS.findIndex(x => x.id === db.lvl);
+      const targetIdx  = i;
+      if (targetIdx <= currentIdx) {
+        // Alt seviyeye veya aynı seviyeye geç — sınav yok
+        applyLevel(l.id);
+      } else if (targetIdx === currentIdx + 1) {
+        // Bir üst seviye — sınav aç
+        openLevelGate(l.id);
+      } else {
+        // İki+ seviye atlama — izin verme
+        notify('⚠️ Seviyeleri sırayla geçmelisiniz!');
+      }
+    };
     if (db.lvl === l.id) btn.classList.add('selected');
     grid.appendChild(btn);
   });
@@ -2233,11 +2359,52 @@ function openCards() {
 function openDictCards() {
   if (db.dictionary.length === 0) { notify('Önce Ayarlar\'dan kelime yükleyin! 📂'); return; }
   cardSource = 'dict';
-  // Shuffle for fun
-  cardList = [...db.dictionary].sort(() => Math.random() - .5);
+
+  // Dinamik Kelime Algoritması:
+  // Kullanıcının seviyesine göre kelime tipi dağılımı belirle
+  const CEFR_ORDER = ['A1','A2','B1','B2','C1','C2'];
+  const currentCefr = getLvlConfig(db.lvl).cefr; // örn: "B1"
+  const currentIdx  = CEFR_ORDER.indexOf(currentCefr);
+
+  // Hedef kelime sayısı
+  const TOTAL = Math.min(30, db.dictionary.length);
+  const REINFORCE_RATIO = 0.25; // %25 alt seviye pekiştirme
+
+  const reinforceCount = Math.round(TOTAL * REINFORCE_RATIO);
+  const mainCount      = TOTAL - reinforceCount;
+
+  // Kelimeler seviye alanına göre filtrele (yoksa rastgele)
+  // Sözlüğümüzde seviye alanı yoksa tüm sözlük rastgele
+  const hasCefrField = db.dictionary[0]?.cefr || db.dictionary[0]?.level;
+
+  let mainPool, reinforcePool;
+  if (hasCefrField) {
+    mainPool      = db.dictionary.filter(w => w.cefr === currentCefr || w.level === currentCefr);
+    reinforcePool = db.dictionary.filter(w => {
+      const wCefr = w.cefr || w.level || '';
+      const wIdx  = CEFR_ORDER.indexOf(wCefr);
+      return wIdx >= 0 && wIdx < currentIdx;
+    });
+  } else {
+    // Seviye alanı yoksa tümü aynı havuz — kasa öncelikli karma
+    mainPool      = db.dictionary.filter(w => !db.unknown.find(u => u.w === w.w));
+    reinforcePool = db.unknown.slice();
+  }
+
+  const shuffle = arr => [...arr].sort(() => Math.random() - .5);
+  const mainWords      = shuffle(mainPool).slice(0, mainCount);
+  const reinforceWords = shuffle(reinforcePool).slice(0, reinforceCount);
+
+  // Karıştır: %75 seviye kelimeleri + %25 pekiştirme
+  cardList = shuffle([...mainWords, ...reinforceWords]);
+  if (cardList.length === 0) {
+    // Fallback: tüm sözlük
+    cardList = shuffle(db.dictionary).slice(0, TOTAL);
+  }
+
   cardIdx = 0; isEngMode = true;
   const lbl = document.getElementById('cardModeLabel');
-  if (lbl) lbl.textContent = '📚 Sözlük Çalışma — ' + cardList.length + ' kelime';
+  if (lbl) lbl.textContent = `📚 ${currentCefr} Seviye — ${cardList.length} kelime (${reinforceWords.length} pekiştirme)`;
   show('cardScreen');
   renderCard();
 }
@@ -2274,19 +2441,23 @@ function renderCard() {
   document.getElementById('cardProgress').innerText = `${cardIdx + 1} / ${cardList.length}`;
   const w = cardList[cardIdx];
   const cont = document.getElementById('cardContainer');
+  const trHint = (w.tr && w.tr !== '?') ? w.tr : '';
+  const teHint = (w.te && w.te !== '?') ? w.te : '';
   cont.innerHTML = `
     <div class="card-box" onclick="handleCardClick(event, this)">
       <div class="card-inner">
         <div class="card-face card-front">
-          <div style="font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:12px;">
+          <div style="font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:8px;">
             ${isEngMode ? 'English → Turkish' : 'Türkçe Mod'}
           </div>
           <div class="card-word">${w.w}</div>
-          <div style="width:40px;height:3px;background:var(--lvl-main);border-radius:2px;margin:12px 0 8px;"></div>
+          ${teHint ? `<div style="font-size:.72rem;color:var(--muted);margin-top:4px;font-style:italic;">${teHint}</div>` : ''}
+          <div style="width:40px;height:3px;background:var(--lvl-main);border-radius:2px;margin:10px 0 6px;"></div>
+          ${trHint ? `<div style="font-size:1.05rem;font-weight:700;color:var(--lvl-dark);margin-bottom:8px;">${trHint}</div>` : ''}
           <button class="speak-btn" id="speakFront" onclick="event.stopPropagation(); speakWord('${w.w}', 'en-US')">
             🔊 Telaffuz
           </button>
-          <div class="card-hint" style="margin-top:10px;">Çevirmek için dokun 👆</div>
+          <div class="card-hint" style="margin-top:8px;">Detay için dokun 👆</div>
         </div>
         <div class="card-face card-back" id="cardBack"></div>
       </div>
@@ -2778,10 +2949,32 @@ function pauseS() {
   synth.pause();
   document.querySelectorAll('#readArea .is-speaking').forEach(el => el.classList.remove('is-speaking'));
 }
+function resumeS() {
+  // Durdurulduysa devam et, hiç başlamadıysa baştan başlat
+  if (synth.paused) {
+    isPlaying = true;
+    synth.resume();
+  } else if (!isPlaying) {
+    playS();
+  }
+}
 function stopS() {
   isPlaying = false;
   synth.cancel();
   document.querySelectorAll('#readArea .is-speaking').forEach(el => el.classList.remove('is-speaking'));
+}
+
+let readDarkMode = false;
+function toggleReadDark() {
+  readDarkMode = !readDarkMode;
+  const screen = document.getElementById('readMod');
+  const btn = document.getElementById('readDarkBtn');
+  screen.classList.toggle('read-dark', readDarkMode);
+  btn.textContent = readDarkMode ? '☀️' : '🌙';
+  // reading-body arka planını da güncelle
+  const area = document.getElementById('readArea');
+  area.style.background = readDarkMode ? '#0f0f1a' : '';
+  area.style.color = readDarkMode ? '#e2d9c8' : '';
 }
 function updateSpd() {
   const v = document.getElementById('speed').value;
@@ -2817,11 +3010,14 @@ function testWordCard() {
 
 // ---- EXPORT / IMPORT ----
 function exportJSON() {
+  const now = new Date();
+  const ts = now.toISOString().replace(/[:.]/g,'-').slice(0,19);
   const blob = new Blob([JSON.stringify(db, null, 2)], { type:'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `linguivance_backup_${todayKey()}.json`;
+  a.download = `linguivance_yedek_${ts}.json`;
   a.click();
+  notify(`📥 Yedek alındı: ${ts}`);
 }
 function importJSON(input) {
   const reader = new FileReader();
@@ -2956,6 +3152,215 @@ function obComplete() {
   launchConfetti();
   updateDailyGoalWidget();
   renderProfile();
+}
+
+// ---- PLACEMENT TEST ----
+const PLACEMENT_Qs = [
+  // A1
+  { q: '"Merhaba" İngilizce nedir?', opts:['Hello','Goodbye','Thanks','Sorry'], ans:0, lvl:'A1' },
+  { q: 'What is the opposite of "big"?', opts:['Large','Small','Tall','Wide'], ans:1, lvl:'A1' },
+  { q: '"I ___ a student." Boşluğa ne gelir?', opts:['am','is','are','be'], ans:0, lvl:'A1' },
+  // A2
+  { q: 'Which sentence is correct?', opts:['She go to school','She goes to school','She going to school','She gone to school'], ans:1, lvl:'A2' },
+  { q: '"Yesterday I ___ my homework." (do)', opts:['do','does','did','done'], ans:2, lvl:'A2' },
+  // B1
+  { q: 'Choose the correct form: "If it rains, I ___ stay home."', opts:['will','would','should','shall'], ans:0, lvl:'B1' },
+  { q: 'What does "reluctant" mean?', opts:['Eager','Unwilling','Excited','Confused'], ans:1, lvl:'B1' },
+  // B2
+  { q: '"She wishes she ___ more time." (have)', opts:['has','have','had','having'], ans:2, lvl:'B2' },
+  { q: 'Which word means "to make something less severe"?', opts:['Aggravate','Mitigate','Eliminate','Provoke'], ans:1, lvl:'B2' },
+  // C1
+  { q: '"No sooner ___ he arrived than it started raining."', opts:['did','had','has','was'], ans:1, lvl:'C1' },
+  { q: 'What does "obfuscate" mean?', opts:['Clarify','Deceive','Simplify','Confuse deliberately'], ans:3, lvl:'C1' },
+  // C2
+  { q: 'Which is an example of a "pleonasm"?', opts:['Free gift','Old antique','Both A and B','Neither A nor B'], ans:2, lvl:'C2' },
+  { q: '"The bill was passed ___ all opposition." Which fits?', opts:['despite','although','however','whereas'], ans:0, lvl:'C2' },
+];
+
+let ptIdx = 0, ptCorrect = 0, ptLevelScores = {};
+
+function startPlacementTest() {
+  ptIdx = 0; ptCorrect = 0;
+  ptLevelScores = { A1:0,A2:0,B1:0,B2:0,C1:0,C2:0 };
+  document.getElementById('ptResult').style.display = 'none';
+  document.getElementById('ptQuestion').style.display = 'block';
+  document.getElementById('ptOptions').style.display = 'grid';
+  obNext(5);
+  renderPlacementQ();
+}
+
+function renderPlacementQ() {
+  if (ptIdx >= PLACEMENT_Qs.length) {
+    finishPlacementTest();
+    return;
+  }
+  const q = PLACEMENT_Qs[ptIdx];
+  document.getElementById('ptProgress').innerText = `Soru ${ptIdx+1} / ${PLACEMENT_Qs.length}`;
+  document.getElementById('ptQuestion').innerText = q.q;
+  const optCont = document.getElementById('ptOptions');
+  optCont.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = opt;
+    btn.style.cssText = 'padding:12px;border:2px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:.9rem;cursor:pointer;transition:.2s;';
+    btn.onclick = () => {
+      // Disable all
+      [...optCont.children].forEach(b => b.style.pointerEvents = 'none');
+      if (i === q.ans) {
+        btn.style.background = '#dcfce7'; btn.style.borderColor = '#22c55e';
+        ptCorrect++;
+        ptLevelScores[q.lvl] = (ptLevelScores[q.lvl] || 0) + 1;
+      } else {
+        btn.style.background = '#fef2f2'; btn.style.borderColor = '#ef4444';
+        optCont.children[q.ans].style.background = '#dcfce7';
+        optCont.children[q.ans].style.borderColor = '#22c55e';
+      }
+      setTimeout(() => { ptIdx++; renderPlacementQ(); }, 800);
+    };
+    optCont.appendChild(btn);
+  });
+}
+
+function finishPlacementTest() {
+  // Seviye belirle: doğru cevap oranına göre
+  const total = PLACEMENT_Qs.length;
+  const pct = ptCorrect / total;
+  let detectedLvl, detectedId;
+  if (pct >= 0.85)      { detectedLvl = 'C2'; detectedId = 'Galaxy'; }
+  else if (pct >= 0.70) { detectedLvl = 'C1'; detectedId = 'Mountain'; }
+  else if (pct >= 0.55) { detectedLvl = 'B2'; detectedId = 'Forest'; }
+  else if (pct >= 0.40) { detectedLvl = 'B1'; detectedId = 'Tree'; }
+  else if (pct >= 0.25) { detectedLvl = 'A2'; detectedId = 'Sapling'; }
+  else                  { detectedLvl = 'A1'; detectedId = 'Sprout'; }
+
+  applyLevel(detectedId);
+  obSelectedLevel = detectedId;
+
+  document.getElementById('ptQuestion').style.display = 'none';
+  document.getElementById('ptOptions').style.display = 'none';
+  const res = document.getElementById('ptResult');
+  res.style.display = 'block';
+  const cfg = getLvlConfig(detectedId);
+  document.getElementById('ptResultEmoji').textContent = cfg.icon;
+  document.getElementById('ptResultLevel').textContent = `${cfg.id} — ${cfg.cefr} seviyendesiniz`;
+  document.getElementById('ptResultSub').textContent = `${ptCorrect}/${total} doğru cevap. Seviyeniz otomatik olarak ayarlandı.`;
+}
+
+// ---- LEVEL GATE ----
+// Seviye geçiş sınavı sorular (her seviye için 5 soru)
+const LEVEL_GATE_Qs = {
+  Sapling: [ // A1 → A2
+    { q:'What is the past tense of "go"?', opts:['goed','gone','went','going'], ans:2 },
+    { q:'"There ___ many people in the park." Doğru form?', opts:['is','are','was','were'], ans:1 },
+    { q:'Which word means "fast"?', opts:['Slow','Quick','Heavy','Loud'], ans:1 },
+    { q:'"I ___ to the store yesterday."', opts:['go','goes','went','going'], ans:2 },
+    { q:'Opposite of "hot":', opts:['Warm','Cold','Cool','Mild'], ans:1 },
+  ],
+  Tree: [ // A2 → B1
+    { q:'She suggested ___ a walk.', opts:['to take','taking','take','took'], ans:1 },
+    { q:'"Despite ___ tired, he continued."', opts:['being','to be','be','was'], ans:0 },
+    { q:'Which word means "very important"?', opts:['Trivial','Crucial','Vague','Modest'], ans:1 },
+    { q:'By the time I arrived, they ___ left.', opts:['have','had','has','were'], ans:1 },
+    { q:'"The more you practice, ___ you become."', opts:['better','the better','more better','best'], ans:1 },
+  ],
+  Forest: [ // B1 → B2
+    { q:'Had I known, I ___ helped.', opts:['will have','would have','should','could'], ans:1 },
+    { q:'"Ambiguous" means:', opts:['Clear','Having two meanings','Confident','Simple'], ans:1 },
+    { q:'She ___ have told me earlier. (obligation past)', opts:['could','should','would','might'], ans:1 },
+    { q:'Which is a correct use of "albeit"?', opts:['She came, albeit late','She came albeit and left','Albeit she was late','She albeit came'], ans:0 },
+    { q:'"Complacent" means:', opts:['Worried','Self-satisfied','Energetic','Careful'], ans:1 },
+  ],
+  Mountain: [ // B2 → C1
+    { q:'The proposal was met with ___ resistance.', opts:['staunch','stanch','staple','static'], ans:0 },
+    { q:'Which sentence uses subjunctive correctly?', opts:['I wish I was there','I wish I were there','I wish I am there','I wish I be there'], ans:1 },
+    { q:'"Laconic" means:', opts:['Talkative','Extremely brief','Emotional','Technical'], ans:1 },
+    { q:'Not until he left ___ the party begin.', opts:['did','was','that','had'], ans:0 },
+    { q:'"Perspicacious" describes someone who is:', opts:['Lazy','Insightful','Stubborn','Careless'], ans:1 },
+  ],
+  Galaxy: [ // C1 → C2
+    { q:'"Solecism" refers to:', opts:['A grammatical error','A figure of speech','A logical fallacy','A literary device'], ans:0 },
+    { q:'Which is an example of "litotes"?', opts:['"He\'s not the brightest"','A rolling stone"','Carpe diem"','Veni vidi vici"'], ans:0 },
+    { q:'"Tendentious" writing is:', opts:['Objective','Biased toward a view','Unclear','Technically complex'], ans:1 },
+    { q:'The phrase "begging the question" originally means:', opts:['Raising a question','Assuming the conclusion','Avoiding an answer','Asking for clarification'], ans:1 },
+    { q:'"Sesquipedalian" refers to:', opts:['Long words','Short sentences','Metaphors','Old texts'], ans:0 },
+  ],
+};
+
+const GATE_PASS_THRESHOLD = 0.6; // %60 geçme puanı
+let lgQuestions = [], lgIdx = 0, lgScore = 0, lgTargetLvl = '';
+
+function openLevelGate(targetLvlId) {
+  lgTargetLvl = targetLvlId;
+  lgQuestions = LEVEL_GATE_Qs[targetLvlId] || [];
+  if (lgQuestions.length === 0) {
+    // Bu seviye için sınav yoksa direkt geç
+    applyLevel(targetLvlId);
+    notify(`🎉 ${targetLvlId} seviyesine geçildi!`);
+    return;
+  }
+  lgIdx = 0; lgScore = 0;
+  const cfg = getLvlConfig(targetLvlId);
+  document.getElementById('lgEmoji').textContent = cfg.icon;
+  document.getElementById('lgTitle').textContent = `${cfg.id} Seviye Sınavı`;
+  document.getElementById('lgSub').textContent = `Geçmek için en az %${Math.round(GATE_PASS_THRESHOLD*100)} doğru gerekli.`;
+  document.getElementById('lgQuizArea').style.display = 'block';
+  document.getElementById('lgResult').style.display = 'none';
+  openModal('levelGateModal');
+  renderLGQuestion();
+}
+
+function renderLGQuestion() {
+  if (lgIdx >= lgQuestions.length) { finishLevelGate(); return; }
+  const q = lgQuestions[lgIdx];
+  document.getElementById('lgProgress').textContent = `Soru ${lgIdx+1} / ${lgQuestions.length}`;
+  document.getElementById('lgQuestion').textContent = q.q;
+  const cont = document.getElementById('lgOptions');
+  cont.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = opt;
+    btn.style.cssText = 'padding:10px 8px;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:.85rem;cursor:pointer;';
+    btn.onclick = () => {
+      [...cont.children].forEach(b => b.style.pointerEvents = 'none');
+      if (i === q.ans) {
+        btn.style.background = '#dcfce7'; btn.style.borderColor = '#22c55e'; lgScore++;
+      } else {
+        btn.style.background = '#fef2f2'; btn.style.borderColor = '#ef4444';
+        cont.children[q.ans].style.background = '#dcfce7';
+        cont.children[q.ans].style.borderColor = '#22c55e';
+      }
+      setTimeout(() => { lgIdx++; renderLGQuestion(); }, 700);
+    };
+    cont.appendChild(btn);
+  });
+}
+
+function finishLevelGate() {
+  const pct = lgScore / lgQuestions.length;
+  const passed = pct >= GATE_PASS_THRESHOLD;
+  document.getElementById('lgQuizArea').style.display = 'none';
+  document.getElementById('lgResult').style.display = 'block';
+
+  if (passed) {
+    applyLevel(lgTargetLvl);
+    const cfg = getLvlConfig(lgTargetLvl);
+    document.getElementById('lgResultEmoji').textContent = '🎉';
+    document.getElementById('lgResultTitle').textContent = `Geçtiniz! ${cfg.id} seviyesindesiniz.`;
+    document.getElementById('lgResultSub').textContent = `${lgScore}/${lgQuestions.length} doğru — Tebrikler!`;
+    document.getElementById('lgResultBtn').textContent = '🚀 Devam Et';
+    document.getElementById('lgResultBtn').onclick = () => { closeModal('levelGateModal'); launchConfetti(); };
+  } else {
+    document.getElementById('lgResultEmoji').textContent = '❌';
+    document.getElementById('lgResultTitle').textContent = 'Sınav başarısız';
+    document.getElementById('lgResultSub').textContent = `${lgScore}/${lgQuestions.length} doğru. Geçmek için %${Math.round(GATE_PASS_THRESHOLD*100)} gerekli. Daha fazla pratik yapın!`;
+    document.getElementById('lgResultBtn').textContent = '🔄 Tekrar Dene';
+    document.getElementById('lgResultBtn').onclick = () => {
+      lgIdx = 0; lgScore = 0;
+      document.getElementById('lgQuizArea').style.display = 'block';
+      document.getElementById('lgResult').style.display = 'none';
+      renderLGQuestion();
+    };
+  }
 }
 
 // ---- TAB BAR ----
@@ -3214,13 +3619,76 @@ function closeAdminPanel() {
 }
 
 function adminTabGo(tab) {
-  ['users','data','settings'].forEach(t => {
-    document.getElementById('adminTab-' + t).style.display = t === tab ? 'block' : 'none';
+  ['users','data','edit','settings'].forEach(t => {
+    const el = document.getElementById('adminTab-' + t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
     const btn = document.getElementById('atab-' + t);
     if (btn) btn.className = 'admin-tab-btn' + (t === tab ? ' active' : '');
   });
   if (tab === 'users') renderAdminUsers();
   if (tab === 'data')  renderAdminDataInfo();
+  if (tab === 'edit')  adminInitEditTab();
+}
+
+// ---- METİN DÜZENLEME ----
+let adminEditIdx = null;
+
+function adminInitEditTab() {
+  adminFilterEditList();
+}
+
+function adminFilterEditList() {
+  const lvl = document.getElementById('adminEditLevel').value;
+  const q   = (document.getElementById('adminEditSearch').value || '').toLowerCase().trim();
+  const sel = document.getElementById('adminEditList');
+  sel.innerHTML = '';
+  const list = db.readings.filter(r =>
+    (!lvl || r.lvl === lvl) &&
+    (!q   || r.title.toLowerCase().includes(q))
+  );
+  if (list.length === 0) {
+    sel.innerHTML = '<option value="">— Metin bulunamadı —</option>';
+    return;
+  }
+  list.forEach((r, i) => {
+    const realIdx = db.readings.indexOf(r);
+    const opt = document.createElement('option');
+    opt.value = realIdx;
+    opt.textContent = `[${r.lvl}] ${r.title}`;
+    sel.appendChild(opt);
+  });
+  // İlk seçeneği otomatik seç
+  if (sel.options.length > 0) {
+    sel.selectedIndex = 0;
+    adminLoadEditText();
+  }
+}
+
+function adminLoadEditText() {
+  const sel = document.getElementById('adminEditList');
+  const idx = parseInt(sel.value);
+  if (isNaN(idx) || !db.readings[idx]) return;
+  adminEditIdx = idx;
+  const r = db.readings[idx];
+  document.getElementById('adminEditTitle').textContent = r.title;
+  document.getElementById('adminEditLvlBadge').textContent = r.lvl;
+  document.getElementById('adminEditEn').value = r.en || '';
+  document.getElementById('adminEditTr').value = r.tr || '';
+  document.getElementById('adminEditPanel').style.display = 'block';
+}
+
+function adminSaveEdit() {
+  if (adminEditIdx === null || !db.readings[adminEditIdx]) return;
+  db.readings[adminEditIdx].en = document.getElementById('adminEditEn').value.trim();
+  db.readings[adminEditIdx].tr = document.getElementById('adminEditTr').value.trim();
+  save();
+  notify(`✅ "${db.readings[adminEditIdx].title}" kaydedildi`);
+}
+
+function adminCancelEdit() {
+  adminEditIdx = null;
+  document.getElementById('adminEditPanel').style.display = 'none';
+  document.getElementById('adminEditList').selectedIndex = -1;
 }
 
 // ---- KULLANICI YÖNETİMİ ----
@@ -3462,17 +3930,20 @@ function adminClearData(type) {
 }
 
 function adminExportAll() {
+  const now = new Date();
+  const ts = now.toISOString().replace(/[:.]/g,'-').slice(0,19);
   const data = {
-    exportDate: new Date().toISOString(),
-    appVersion: 'v16',
+    exportDate: now.toISOString(),
+    appVersion: 'v20',
     userData: db,
     adminUsers: JSON.parse(localStorage.getItem('lv_admin_users') || '[]'),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `linguivance_admin_backup_${todayKey()}.json`;
+  a.download = `linguivance_admin_yedek_${ts}.json`;
   a.click();
+  notify(`📥 Admin yedeği alındı: ${ts}`);
 }
 
 function adminResetEverything() {
