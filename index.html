@@ -2695,13 +2695,11 @@ function showStats() {
 let synth = window.speechSynthesis, isPlaying = false;
 
 function highlightWord(idx) {
-  // Önceki highlight'ı kaldır
   document.querySelectorAll('#readArea .is-speaking').forEach(el => el.classList.remove('is-speaking'));
   if (idx === null) return;
   const span = document.querySelector(`#readArea [data-wi="${idx}"]`);
   if (!span) return;
   span.classList.add('is-speaking');
-  // Span görünür alanda değilse scroll et
   span.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
@@ -2710,46 +2708,69 @@ function playS() {
   synth.cancel(); isPlaying = true;
   const speed = parseFloat(document.getElementById('speed').value);
   const lines = (activeR?.en || '').trim().split('\n');
-  const text = lines.length > 1 ? lines.slice(1).join(' ') : (lines[0] || '');
+  const fullText = lines.length > 1 ? lines.slice(1).join(' ') : (lines[0] || '');
 
-  // Kelime listesi — nokta ve virgülleri de ayrı token olarak tut
-  const tokens = text.split(/\s+/);
-  let wi = 0; // word-span index (sadece gerçek kelimeler sayılır)
+  // Metni cümlelere böl (nokta ve virgül sınırları)
+  // Her segment doğal akışla okunacak
+  const segments = [];
+  let cur = '';
+  fullText.split(/([,\.])/).forEach(part => {
+    if (part === ',' || part === '.') {
+      if (cur.trim()) segments.push({ text: cur.trim(), pause: part === '.' ? 300 : 125 });
+      cur = '';
+    } else {
+      cur += part;
+    }
+  });
+  if (cur.trim()) segments.push({ text: cur.trim(), pause: 0 });
 
-  function speakToken(i) {
-    if (i >= tokens.length || !isPlaying) {
+  // Tüm kelimelerin düz listesi (highlight için)
+  const allWords = fullText.split(/\s+/).filter(w => w.trim());
+  let globalWi = 0; // mevcut kelime indexi
+
+  // Her segment için kelime sayısını hesapla
+  segments.forEach(seg => {
+    seg.wordCount = seg.text.split(/\s+/).filter(w => w.trim()).length;
+  });
+
+  let segIdx = 0;
+
+  function speakSegment() {
+    if (segIdx >= segments.length || !isPlaying) {
       highlightWord(null);
       isPlaying = false;
       return;
     }
-    const raw = tokens[i];
-    const word = raw.replace(/[,.]$/, ''); // sondaki noktalama kaldır
-    const punct = raw.length > word.length ? raw[raw.length - 1] : null;
+    const seg = segments[segIdx];
+    const u = new SpeechSynthesisUtterance(seg.text);
+    u.rate = speed;
+    u.lang = 'en-US';
 
-    if (!word.trim()) { speakToken(i + 1); return; }
+    // onboundary: tarayıcı kelime sınırını bildirdiğinde highlight yap
+    const segStartWi = globalWi;
+    let localWi = 0;
+    u.onboundary = (e) => {
+      if (e.name === 'word') {
+        highlightWord(segStartWi + localWi);
+        localWi++;
+      }
+    };
 
-    // Highlight — bu token'ın span index'i
-    highlightWord(wi);
-    const currentWi = wi;
-    wi++;
-
-    const u = new SpeechSynthesisUtterance(word);
-    u.rate = speed; u.lang = 'en-US';
     u.onend = () => {
+      globalWi += seg.wordCount;
+      segIdx++;
       if (!isPlaying) { highlightWord(null); return; }
-      if (punct === ',') {
-        setTimeout(() => speakToken(i + 1), Math.round(280 / speed));
-      } else if (punct === '.') {
-        setTimeout(() => speakToken(i + 1), Math.round(620 / speed));
+      if (seg.pause > 0) {
+        setTimeout(speakSegment, Math.round(seg.pause / speed));
       } else {
-        speakToken(i + 1);
+        speakSegment();
       }
     };
     u.onerror = () => { highlightWord(null); isPlaying = false; };
     synth.speak(u);
   }
 
-  speakToken(0);
+  speakSegment();
 }
 
 function pauseS() {
