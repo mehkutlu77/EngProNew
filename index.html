@@ -3206,11 +3206,15 @@ function normalizeReading(raw) {
   if (raw.en && raw.qs) return raw;
 
   // Gerçek JSON formatı: { title, content, translation, questions }
-  // Seviyeyi title'ın başından çıkar: "A2 Airport" → lvl="A2", title="Airport"
+  // Seviyeyi title'ın başından çıkar: "A2 Airport" → cefr="A2", title="Airport"
   const fullTitle = raw.title || '';
-  const lvlMatch  = fullTitle.match(/^(A1|A2|B1|B2|C1|C2|Sprout|Forest|Mountain|Galaxy|River|Sky)\s+/i);
-  const lvl       = lvlMatch ? lvlMatch[1].toUpperCase() : 'A1';
+  const lvlMatch  = fullTitle.match(/^(A1|A2|B1|B2|C1|C2|Sprout|Sapling|Tree|Forest|Mountain|Galaxy)\s+/i);
+  const rawLvl    = lvlMatch ? lvlMatch[1] : 'A1';
   const title     = lvlMatch ? fullTitle.substring(lvlMatch[0].length) : fullTitle;
+
+  // CEFR → level id dönüşümü (uygulama level id kullanıyor)
+  const cefrToId = { A1:'Sprout', A2:'Sapling', B1:'Tree', B2:'Forest', C1:'Mountain', C2:'Galaxy' };
+  const lvl = cefrToId[rawLvl.toUpperCase()] || rawLvl; // zaten level id ise olduğu gibi bırak
 
   // Soru dönüşümü: options dizisi → A/B/C/D, answer harfi → correct
   const qs = (raw.questions || []).map(q => {
@@ -3228,7 +3232,7 @@ function normalizeReading(raw) {
   return {
     lvl,
     title,
-    en: raw.content    || raw.en || '',
+    en: raw.content     || raw.en || '',
     tr: raw.translation || raw.tr || '',
     qs,
   };
