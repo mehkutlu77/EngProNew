@@ -1666,8 +1666,14 @@ let db = {
   dictionary: [],
   unknown: [],
   readings: [],
-  weekActivity: {}, // { "YYYY-MM-DD": true }
-  stats: { completed: {}, correct: 0, total: 0 }
+  weekActivity: {},
+  stats: { completed: {}, correct: 0, total: 0 },
+  profile: { name: '', avatar: '😊', goal: 10 },
+  settings: { darkMode: false, notifications: false, sound: true },
+  onboardingDone: false,
+  todayWords: 0,
+  todayDate: '',
+  badges: [],
 };
 
 // ---- LEVEL CONFIG ----
@@ -1738,10 +1744,44 @@ const QUOTES = {
 
 // ---- PERSISTENCE ----
 const STORAGE_KEY = 'master_eng_v13';
-const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+
+// Kaydetme: dictionary ve readings HARİÇ (bunlar JS dosyasından gelir)
+// Sadece kullanıcı verisini kaydet: profil, kelime kasası, istatistik, ayarlar
+const save = () => {
+  const toSave = {
+    lvl:           db.lvl,
+    lang:          db.lang,
+    unknown:       db.unknown,
+    weekActivity:  db.weekActivity,
+    stats:         db.stats,
+    profile:       db.profile,
+    settings:      db.settings,
+    onboardingDone:db.onboardingDone,
+    todayWords:    db.todayWords,
+    todayDate:     db.todayDate,
+    badges:        db.badges,
+  };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch(e) {
+    console.warn('localStorage yazma hatası:', e);
+  }
+};
+
+// Yükleme: kullanıcı verisini geri al, dictionary/readings JS'den gelecek
 const load = () => {
-  const data = localStorage.getItem(STORAGE_KEY);
-  if (data) db = { ...db, ...JSON.parse(data) };
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (data) {
+      const parsed = JSON.parse(data);
+      // dictionary ve readings'i EZME — JS dosyasından gelecek
+      delete parsed.dictionary;
+      delete parsed.readings;
+      db = { ...db, ...parsed };
+    }
+  } catch(e) {
+    console.warn('localStorage okuma hatası:', e);
+  }
 };
 
 // ---- TOAST ----
@@ -2666,35 +2706,24 @@ function resetAllLegacy() {
 // ---- INIT ----
 load();
 
-// kelimeler.js ve reading.js varsa otomatik yükle
-// Her iki orijinal format da desteklenir (İngilizceKelime... veya w/tr/te...)
-// Dosyalar her zaman localStorage'ı günceller — yeni kelime ekleyince otomatik yansır
+// kelimeler.js ve reading.js her açılışta yüklenir — localStorage'a yazılmaz
+// Veri her zaman JS dosyasından gelir, localStorage sadece kullanıcı verisini tutar
 (function injectBuiltinData() {
   // kelimeler.js → const KELIMELER = [...];
   if (typeof KELIMELER !== 'undefined' && Array.isArray(KELIMELER) && KELIMELER.length > 0) {
     const sample = KELIMELER[0];
-    const normalized = sample.w
+    db.dictionary = sample.w
       ? KELIMELER
       : KELIMELER.map(normalizeWord).filter(w => w.w);
-    // Boyut farklıysa güncelle (yeni kelime eklendi)
-    if (normalized.length !== db.dictionary.length) {
-      db.dictionary = normalized;
-      save();
-      console.log(`✅ kelimeler.js: ${db.dictionary.length} kelime yüklendi`);
-    }
+    console.log(`✅ kelimeler.js: ${db.dictionary.length} kelime`);
   }
   // reading.js → const READINGS = [...];
   if (typeof READINGS !== 'undefined' && Array.isArray(READINGS) && READINGS.length > 0) {
     const sample = READINGS[0];
-    const normalized = (sample.en && sample.qs)
+    db.readings = (sample.en && sample.qs)
       ? READINGS
       : READINGS.map(normalizeReading).filter(r => r.title);
-    // Boyut farklıysa güncelle (yeni metin eklendi)
-    if (normalized.length !== db.readings.length) {
-      db.readings = normalized;
-      save();
-      console.log(`✅ reading.js: ${db.readings.length} okuma metni yüklendi`);
-    }
+    console.log(`✅ reading.js: ${db.readings.length} metin`);
   }
 })();
 buildLevelGrid();
